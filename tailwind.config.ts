@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"Roboto"', 'sans-serif'],
-        headline: ['"Roboto"', 'sans-serif'],
+        body: ['"Airbnb Cereal App"', 'sans-serif'],
+        headline: ['"Airbnb Cereal App"', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sun, Moon, LogOut } from "lucide-react";
+import { Sun, Moon, LogOut, Gem } from "lucide-react";
+import Link from "next/link";
 
 interface AppHeaderProps {
   user: { name: string; tier: 'platinum' | 'gold' } | null;
@@ -34,6 +35,12 @@ export default function AppHeader({ user, onLogout, darkMode, setDarkMode }: App
           </div>
           
           <div className="flex items-center gap-3">
+             <Link href="/subscribe">
+              <Button variant="ghost" size="sm">
+                <Gem className="mr-2 h-4 w-4" />
+                Upgrade
+              </Button>
+            </Link>
             <p className="text-sm font-medium text-muted-foreground hidden sm:block">
               Welcome, {user?.name || 'User'}!
             </p>
