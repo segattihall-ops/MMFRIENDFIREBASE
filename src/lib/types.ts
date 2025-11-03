@@ -1,4 +1,5 @@
 
+
 export type City = {
   name: string;
   state: string;
@@ -45,7 +46,7 @@ export type Review = {
     revieweeId: string;
     rating: number;
     comment: string;
-    createdAt: string; // ISO date string
+    createdAt: any; 
 }
 
 export type ServiceListing = {
@@ -55,5 +56,5 @@ export type ServiceListing = {
   description: string;
   rate: number;
   location: string; // For simplicity, a string. Could be GeoPoint later.
-  createdAt: string;
+  createdAt: any;
 }

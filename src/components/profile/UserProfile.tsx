@@ -15,9 +15,10 @@ import ReviewForm from './ReviewForm';
 
 interface UserProfileProps {
   userId: string;
+  onViewProfile: (userId: string) => void;
 }
 
-const UserProfile = ({ userId }: UserProfileProps) => {
+const UserProfile = ({ userId, onViewProfile }: UserProfileProps) => {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
@@ -46,11 +47,11 @@ const UserProfile = ({ userId }: UserProfileProps) => {
        <div className="border-b pb-4 last:border-b-0">
           <div className="flex justify-between items-start mb-2">
               <div className="flex items-center gap-2">
-                  <Avatar className="w-8 h-8">
+                  <Avatar className="w-8 h-8 cursor-pointer" onClick={() => onViewProfile(review.reviewerId)}>
                       <AvatarImage src={`https://picsum.photos/seed/rev${review.reviewerId}/40/40`} alt={reviewer?.email} />
                       <AvatarFallback>{reviewer ? reviewer.email.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
                   </Avatar>
-                  <p className="font-semibold">{reviewer?.email.split('@')[0] || 'Anonymous'}</p>
+                  <p className="font-semibold cursor-pointer" onClick={() => onViewProfile(review.reviewerId)}>{reviewer?.email.split('@')[0] || 'Anonymous'}</p>
               </div>
               <div className="flex items-center shrink-0">
                   {[...Array(5)].map((_, i) => (

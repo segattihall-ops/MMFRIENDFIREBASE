@@ -141,7 +141,7 @@ export default function MasseurProApp() {
     }
 
     if (activeTab === 'profile' && viewingProfileId) {
-        return <UserProfile userId={viewingProfileId} />;
+        return <UserProfile userId={viewingProfileId} onViewProfile={handleViewProfile} />;
     }
 
     switch (activeTab) {
@@ -157,7 +157,7 @@ export default function MasseurProApp() {
         case 'masseurbnb':
             return <MasseurBnb userTier={userTier} />;
         case 'services':
-            return <ServicesMarketplace userTier={userTier} />;
+            return <ServicesMarketplace userTier={userTier} onViewProfile={handleViewProfile} />;
         case 'revenue':
             return <RevenueDashboard userTier={userTier} />;
         case 'clients':

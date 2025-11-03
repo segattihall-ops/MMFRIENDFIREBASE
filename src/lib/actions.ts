@@ -6,7 +6,7 @@ import { predictMassageDemand } from "@/ai/flows/predict-massage-demand";
 import { generateTripItinerary, GenerateTripItineraryInput } from "@/ai/flows/generate-trip-itinerary";
 import { generateRoadTripItinerary, GenerateRoadTripItineraryInput } from "@/ai/flows/generate-road-trip-itinerary";
 import { cities } from "./data";
-import type { Forecast, Review } from "./types";
+import type { Forecast, Review, ServiceListing } from "./types";
 import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { initializeFirebase } from "@/firebase/server-init";
 
@@ -49,6 +49,26 @@ export async function submitReviewAction(reviewData: Omit<Review, 'id' | 'create
         return { success: true, id: docRef.id };
     } catch (error: any) {
         console.error("Error submitting review: ", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function addServiceListingAction(listingData: Omit<ServiceListing, 'id' | 'createdAt'>) {
+    const { firestore } = initializeFirebase();
+    if (!firestore) {
+        throw new Error("Firestore is not initialized.");
+    }
+
+    try {
+        const listingWithTimestamp = {
+            ...listingData,
+            createdAt: serverTimestamp(),
+        };
+        const listingsCollectionRef = collection(firestore, 'service_listings');
+        const docRef = await addDoc(listingsCollectionRef, listingWithTimestamp);
+        return { success: true, id: docRef.id };
+    } catch (error: any) {
+        console.error("Error adding service listing: ", error);
         return { success: false, error: error.message };
     }
 }
