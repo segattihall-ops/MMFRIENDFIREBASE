@@ -15,7 +15,6 @@ import CommunityForum from './community/CommunityForum';
 import SafetyReport from './safety/SafetyReport';
 import AdminDashboard from './admin/AdminDashboard';
 import { useToast } from '@/hooks/use-toast';
-import { cities } from '@/lib/data';
 
 export default function MasseurProApp() {
   const [showLogin, setShowLogin] = useState(true);
@@ -66,15 +65,13 @@ export default function MasseurProApp() {
   
   const handleCitySelect = useCallback((cityName: string | null) => {
     setSelectedCity(cityName);
-    if (cityName && (user?.tier === 'gold' || user?.tier === 'platinum')) {
-      setActiveTab('planner');
-    } else if (cityName) {
+    if (cityName) {
       setActiveTab('planner');
     }
      else {
       setActiveTab('dashboard');
     }
-  }, [user?.tier]);
+  }, []);
 
   const handleTabSelect = (tab: ActiveTab) => {
      if (tab === 'dashboard') {
@@ -98,24 +95,11 @@ export default function MasseurProApp() {
             }
         } catch (error: any) {
             console.error(error);
-            if (!isCancelled) {
-                const fallbackForecasts = cities.map(city => ({
-                    city: city.name,
-                    state: city.state,
-                    demandScore: Math.floor(Math.random() * 60) + 30,
-                    lgbtqIndex: city.lgbtqIndex,
-                }));
-                setForecastData(fallbackForecasts);
-                
-                let description = "Could not fetch live market demand. Displaying cached data.";
-                if (error.message && error.message.includes('429')) {
-                    description = "AI service is busy. Displaying cached demand data to avoid rate limits."
-                }
-
+             if (!isCancelled) {
                 toast({
                     variant: "destructive",
-                    title: "AI Service Unstable",
-                    description: description,
+                    title: "Error Fetching Data",
+                    description: "Could not fetch market demand. Please try again later.",
                 });
             }
         } finally {
