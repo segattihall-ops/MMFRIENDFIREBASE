@@ -1,11 +1,14 @@
+
 "use client";
 
+import { useState } from 'react';
 import type { Forecast } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Flame } from 'lucide-react';
+import { Flame, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface HeatmapProps {
   forecastData: Forecast[];
@@ -27,7 +30,14 @@ const getDemandText = (score: number) => {
 }
 
 export default function Heatmap({ forecastData, isLoading, onCitySelect, userTier }: HeatmapProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const sortedForecast = [...forecastData].sort((a, b) => b.demandScore - a.demandScore);
+  
+  const filteredForecast = sortedForecast.filter(forecast => 
+    forecast.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    forecast.state.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   
   return (
     <div className="space-y-6">
@@ -46,7 +56,18 @@ export default function Heatmap({ forecastData, isLoading, onCitySelect, userTie
         </Card>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="relative max-w-lg mx-auto">
+        <Input
+            type="text"
+            placeholder="Search by city or state..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-12 text-lg"
+        />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {isLoading ? (
           Array.from({ length: 15 }).map((_, i) => (
             <Card key={i}>
@@ -61,7 +82,7 @@ export default function Heatmap({ forecastData, isLoading, onCitySelect, userTie
             </Card>
           ))
         ) : (
-          sortedForecast.map((forecast) => (
+          filteredForecast.map((forecast) => (
             <Card
               key={forecast.city}
               className={`cursor-pointer transition-all duration-300 border-2 hover:shadow-lg hover:-translate-y-1 ${getBorderColor(forecast.demandScore)}`}
