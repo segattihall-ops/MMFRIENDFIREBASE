@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -116,12 +117,14 @@ export default function MasseurProApp() {
   }, [showLogin, toast]);
 
   const renderContent = () => {
+    const userTier = user?.tier || 'free';
+    
     if (activeTab === 'planner' && selectedCity) {
        return <Planner 
             selectedCityName={selectedCity} 
             onCitySelect={handleCitySelect} 
             forecastData={forecastData}
-            userTier={user!.tier}
+            userTier={userTier}
         />
     }
 
@@ -131,22 +134,29 @@ export default function MasseurProApp() {
                 forecastData={forecastData} 
                 isLoading={isLoadingForecast} 
                 onCitySelect={handleCitySelect} 
-                userTier={user!.tier}
+                userTier={userTier}
             />;
         case 'revenue':
-            return <RevenueDashboard />;
+            return <RevenueDashboard userTier={userTier} />;
         case 'clients':
-            return <ClientCrm />;
+            return <ClientCrm userTier={userTier} />;
         case 'community':
-            return <CommunityForum />;
+            return <CommunityForum userTier={userTier} />;
         case 'admin':
             return user?.isAdmin ? <AdminDashboard /> : <p>Access Denied</p>;
+        case 'planner':
+             return <Planner 
+                selectedCityName={''} 
+                onCitySelect={handleCitySelect} 
+                forecastData={forecastData}
+                userTier={userTier}
+            />
         default:
              return <Heatmap 
                 forecastData={forecastData} 
                 isLoading={isLoadingForecast} 
                 onCitySelect={handleCitySelect} 
-                userTier={user!.tier}
+                userTier={userTier}
             />;
     }
   }

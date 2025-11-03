@@ -116,6 +116,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
     }
   };
 
+  const isGoldOrHigher = userTier === 'gold' || userTier === 'platinum';
   const isPlatinum = userTier === 'platinum';
 
   if (!selectedCity) {
@@ -175,14 +176,13 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                             <CardTitle className="text-lg font-headline flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-primary"/>AI Pricing Guidance</CardTitle>
                         </CardHeader>
                         <CardContent>
-                        {(userTier === 'free' || userTier === 'silver') && (
+                        {!isGoldOrHigher ? (
                             <div className="flex flex-col items-center justify-center h-full text-center">
                                 <p className="font-semibold">This is a Gold feature</p>
                                 <p className="text-sm text-muted-foreground mb-4">Upgrade to unlock AI-powered pricing.</p>
                                 <Link href="/subscribe"><Button size="sm">Upgrade Now</Button></Link>
                             </div>
-                        )}
-                        {(userTier === 'gold' || userTier === 'platinum') && (
+                        ) : (
                             <>
                             {isLoading ? (
                                 <div className="flex items-center justify-center h-40">
@@ -217,24 +217,28 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                     </Card>
                 </div>
                 
-                {isPlatinum && pricingData && !isLoading && (
-                    <Button onClick={handleGenerateItinerary} className="w-full font-bold" size="lg" disabled={isItineraryLoading}>
-                    {isItineraryLoading ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
-                    ) : (
-                        <><Ticket className="mr-2 h-4 w-4" /> Generate Trip Itinerary</>
-                    )}
-                    </Button>
+                {isGoldOrHigher && pricingData && !isLoading && (
+                     <>
+                        {isPlatinum ? (
+                             <Button onClick={handleGenerateItinerary} className="w-full font-bold" size="lg" disabled={isItineraryLoading}>
+                                {isItineraryLoading ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                                ) : (
+                                    <><Ticket className="mr-2 h-4 w-4" /> Generate Trip Itinerary</>
+                                )}
+                            </Button>
+                        ) : (
+                             <Card className="text-center p-6 bg-muted/30">
+                                <CardTitle className="font-headline text-lg">AI Itinerary is a Platinum Feature</CardTitle>
+                                <CardDescription className="mb-4 mt-1">Upgrade to get a fully-planned trip schedule!</CardDescription>
+                                <Link href="/subscribe">
+                                    <Button>Upgrade to Platinum</Button>
+                                </Link>
+                            </Card>
+                        )}
+                    </>
                 )}
-                 {userTier !== 'platinum' && pricingData && !isLoading && (
-                     <Card className="text-center p-6 bg-muted/30">
-                        <CardTitle className="font-headline text-lg">AI Itinerary is a Platinum Feature</CardTitle>
-                        <CardDescription className="mb-4 mt-1">Upgrade to get a fully-planned trip schedule!</CardDescription>
-                        <Link href="/subscribe">
-                            <Button>Upgrade to Platinum</Button>
-                        </Link>
-                    </Card>
-                )}
+
 
                 {isPlatinum && selectedCity && (
                      <Card>
@@ -245,7 +249,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                         <CardContent>
                             <GoogleTrendsWidget
                                 keyword="massage therapy"
-                                geo={`US-${selectedCity.state}`}
+                                geo={selectedCity.state}
                             />
                         </CardContent>
                     </Card>

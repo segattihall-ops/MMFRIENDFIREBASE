@@ -1,5 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Users, Star, Repeat } from "lucide-react";
+import Link from "next/link";
 
 const crmData = [
   { title: "Total Clients", value: "42", icon: Users, color: "text-primary" },
@@ -7,7 +10,25 @@ const crmData = [
   { title: "Avg. Rating", value: "4.7", icon: Star, color: "text-yellow-500" },
 ];
 
-export default function ClientCrm() {
+interface ClientCrmProps {
+  userTier: 'platinum' | 'gold' | 'silver' | 'free';
+}
+
+export default function ClientCrm({ userTier }: ClientCrmProps) {
+    if (userTier !== 'platinum') {
+      return (
+        <Card className="text-center p-8">
+          <CardTitle className="font-headline text-2xl">This is a Platinum Feature</CardTitle>
+          <CardDescription className="my-4">
+            Upgrade to the Platinum plan to unlock the Client CRM, helping you manage your client database, track appointments, and build relationships.
+          </CardDescription>
+          <Link href="/subscribe">
+            <Button>Upgrade to Platinum</Button>
+          </Link>
+        </Card>
+      )
+  }
+  
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

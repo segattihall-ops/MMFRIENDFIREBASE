@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ActiveTab } from '@/lib/types';
@@ -30,7 +31,7 @@ export default function AppNav({ activeTab, setActiveTab, user }: AppNavProps) {
       <nav className="max-w-7xl mx-auto flex justify-center overflow-x-auto -mb-px" aria-label="Tabs">
         {allNavItems.map(tab => {
           const isDisabled = 
-            (tab.id === 'planner' && (user.tier === 'free' || user.tier === 'silver')) ||
+            (tab.id === 'planner' && user.tier === 'free') ||
             (tab.id === 'revenue' && user.tier !== 'platinum') ||
             (tab.id === 'clients' && user.tier !== 'platinum') ||
             (tab.id === 'community' && user.tier !== 'platinum');

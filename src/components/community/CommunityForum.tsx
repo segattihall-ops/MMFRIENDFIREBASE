@@ -1,5 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
+import Link from "next/link";
 
 const posts = [
   { author: "Mike", title: "Austin Pride Tips", replies: 23 },
@@ -8,7 +11,25 @@ const posts = [
   { author: "Jordan", title: "Review: Miami vs. Fort Lauderdale Market", replies: 42 },
 ];
 
-export default function CommunityForum() {
+interface CommunityForumProps {
+  userTier: 'platinum' | 'gold' | 'silver' | 'free';
+}
+
+export default function CommunityForum({ userTier }: CommunityForumProps) {
+  if (userTier !== 'platinum') {
+      return (
+        <Card className="text-center p-8">
+          <CardTitle className="font-headline text-2xl">This is a Platinum Feature</CardTitle>
+          <CardDescription className="my-4">
+            Upgrade to the Platinum plan to access the exclusive community forum, connect with other professionals, and share insights.
+          </CardDescription>
+          <Link href="/subscribe">
+            <Button>Upgrade to Platinum</Button>
+          </Link>
+        </Card>
+      )
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
