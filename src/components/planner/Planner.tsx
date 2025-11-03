@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -10,7 +11,7 @@ import type { Forecast, CompetitorData } from '@/lib/types';
 import { trackCompetitors } from '@/lib/utils';
 import { getOptimalPricingAction, generateItineraryAction } from '@/lib/actions';
 import type { GenerateOptimalPricingOutput } from '@/ai/flows/generate-optimal-pricing';
-import { BrainCircuit, Ticket, TrendingUp, Users, Loader2 } from 'lucide-react';
+import { BrainCircuit, Ticket, Users, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ItineraryModal from './ItineraryModal';
 
@@ -24,45 +25,77 @@ interface PlannerProps {
 const GoogleTrendsWidget = ({ keyword, geo, timeRange = 'today 12-m' }: { keyword: string, geo: string, timeRange?: string }) => {
   const widgetRef = useRef<HTMLDivElement>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [isTrendLoading, setIsTrendLoading] = useState(true);
 
   useEffect(() => {
     const existingScript = document.querySelector('script[src="https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js"]');
-    if (existingScript) {
-        setScriptLoaded(true);
-        return;
+    if (existingScript && (window as any).trends) {
+      setScriptLoaded(true);
+      return;
+    }
+    if(existingScript && !(window as any).trends) {
+        setScriptLoaded(false);
+    }
+    if(!existingScript) {
+        const script = document.createElement("script");
+        script.src = "https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js";
+        script.async = true;
+        script.onload = () => setScriptLoaded(true);
+        document.body.appendChild(script);
     }
 
-    const script = document.createElement("script");
-    script.src = "https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js";
-    script.async = true;
-    script.onload = () => setScriptLoaded(true);
-    document.body.appendChild(script);
-
-    return () => {
-      // Clean up script if component unmounts, though often it's fine to leave it.
-    }
   }, []);
 
   useEffect(() => {
-    if (!scriptLoaded || !widgetRef.current || !(window as any).trends) return;
+    if (!scriptLoaded || !widgetRef.current) return;
     
-    (window as any).trends.embed.renderExploreWidgetTo(
-      widgetRef.current,
-      "TIMESERIES",
-      {
-        comparisonItem: [{ keyword, geo, time: timeRange }],
-        category: 0,
-        property: ""
-      },
-      {
-        exploreQuery: `q=${encodeURIComponent(keyword)}&geo=${geo}&date=${timeRange}`,
-        guestPath: "https://trends.google.com:443/trends/embed/"
-      }
-    );
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const renderWidget = () => {
+        if ((window as any).trends) {
+            setIsTrendLoading(true);
+            if (widgetRef.current) {
+                widgetRef.current.innerHTML = "";
+            }
+            (window as any).trends.embed.renderExploreWidgetTo(
+              widgetRef.current,
+              "TIMESERIES",
+              {
+                comparisonItem: [{ keyword, geo, time: timeRange }],
+                category: 0,
+                property: ""
+              },
+              {
+                exploreQuery: `q=${encodeURIComponent(keyword)}&geo=${geo}&date=${timeRange}`,
+                guestPath: "https://trends.google.com:443/trends/embed/"
+              }
+            );
+            // The trends widget has its own loading spinner, but we'll remove our placeholder after a short delay
+            setTimeout(() => setIsTrendLoading(false), 1500);
+        } else if (attempts < maxAttempts) {
+            attempts++;
+            setTimeout(renderWidget, 500);
+        } else {
+            console.error("Failed to load Google Trends widget.");
+            setIsTrendLoading(false);
+        }
+    };
+    
+    renderWidget();
   
-  }, [scriptLoaded, keyword, geo, timeRange, widgetRef]);
+  }, [scriptLoaded, keyword, geo, timeRange]);
 
-  return <div ref={widgetRef} style={{ width: "100%", height: "400px" }} />;
+  return (
+    <div className="relative w-full min-h-[400px]">
+        {isTrendLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-secondary/50 rounded-lg">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        )}
+        <div ref={widgetRef} className={`transition-opacity duration-300 ${isTrendLoading ? 'opacity-0' : 'opacity-100'}`} style={{ width: "100%", height: "400px" }} />
+    </div>
+  );
 };
 
 export default function Planner({ selectedCityName, onCitySelect, forecastData }: PlannerProps) {
@@ -81,16 +114,22 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData }
   useEffect(() => {
     const getPricing = async () => {
       if (!selectedCity) return;
-      if (forecastData.length === 0) return;
+      
+      const cityForecast = forecastData.find(f => f.city === selectedCity.name);
+      // Wait for the forecast data for the selected city to be available
+      if (!cityForecast) {
+          // Keep loading state until we have forecast
+          if (forecastData.length < cities.length){
+            setIsLoading(true);
+          } else {
+            // All forecasts loaded, but city not found (should not happen)
+            setIsLoading(false);
+          }
+          return;
+      }
 
       setIsLoading(true);
       setPricingData(null);
-
-      const cityForecast = forecastData.find(f => f.city === selectedCity.name);
-      if (!cityForecast) {
-        setIsLoading(false);
-        return;
-      }
       
       const competitors = trackCompetitors(selectedCity);
       setCompetitorData(competitors);
@@ -203,11 +242,13 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData }
                     {competitorData ? (
                         <>
                             <p><strong>Active Competitors:</strong> {competitorData.totalActive}</p>
-                            <p><strong>Market Saturation:</strong> <span className={competitorData.saturation === 'High' ? 'text-red-500 font-semibold' : competitorData.saturation === 'Medium' ? 'text-yellow-500 font-semibold' : 'text-green-500 font-semibold'}>{competitorData.saturation}</span></p>
+                            <p><strong>Market Saturation:</strong> <span className={competitorData.saturation === 'High' ? 'text-destructive' : competitorData.saturation === 'Medium' ? 'text-yellow-500' : 'text-green-600'}>{competitorData.saturation}</span></p>
                             <p><strong>Average Market Rate:</strong> ~${competitorData.avgRate}/hr</p>
                         </>
                     ) : (
-                        <p>Select a city to see competitor data.</p>
+                         <div className="flex items-center justify-center h-24">
+                           <p className="text-sm text-muted-foreground">Select a city to see competitor data.</p>
+                        </div>
                     )}
                 </CardContent>
               </Card>
@@ -241,7 +282,9 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData }
                          <p className="text-xs text-muted-foreground italic"><strong>Reasoning:</strong> {pricingData.reasoning}</p>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground h-24 flex items-center justify-center">Pricing analysis will appear here.</p>
+                    <div className="flex items-center justify-center h-24">
+                      <p className="text-sm text-muted-foreground text-center">Pricing analysis will appear here. {forecastData.length < cities.length ? 'Loading market data...' : 'Select a city and month.'}</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -259,13 +302,20 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData }
           )}
 
           {selectedCity && (
-            <div className="mt-6">
-              <h3 className="text-xl font-bold mb-4">Real-Time Google Trends for "Massage" in {selectedCity.name}</h3>
-              <GoogleTrendsWidget
-                keyword="massage"
-                geo={`US-${selectedCity.state}`}
-              />
-            </div>
+            <Card className="mt-6">
+              <CardHeader>
+                  <CardTitle className="font-headline">Real-Time Google Trends</CardTitle>
+                  <CardDescription>
+                      Keyword: &quot;massage&quot; in {selectedCity.name}, {selectedCity.state}
+                  </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <GoogleTrendsWidget
+                  keyword="massage"
+                  geo={`US-${selectedCity.state}`}
+                />
+              </CardContent>
+            </Card>
           )}
         </CardContent>
       </Card>

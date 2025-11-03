@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -62,9 +63,11 @@ export default function MasseurProApp() {
     if (!showLogin) {
       const fetchForecasts = async () => {
         setIsLoadingForecast(true);
+        setForecastData([]);
         try {
-            const data = await predictAllDemandsAction();
-            setForecastData(data);
+          await predictAllDemandsAction((newForecast) => {
+            setForecastData(prevData => [...prevData, newForecast]);
+          });
         } catch (error) {
             console.error(error);
             toast({
@@ -72,8 +75,9 @@ export default function MasseurProApp() {
                 title: "Error",
                 description: "Could not fetch market demand data. Please try again later.",
             });
+        } finally {
+            setIsLoadingForecast(false);
         }
-        setIsLoadingForecast(false);
       };
       fetchForecasts();
     }
