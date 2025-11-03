@@ -312,5 +312,3 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
     </div>
   );
 }
-
-    
