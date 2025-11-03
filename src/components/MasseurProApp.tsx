@@ -20,6 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/auth/use-user';
 import { signOut, Auth } from 'firebase/auth';
 import { useAuth } from '@/firebase';
+import MasseurBnb from './masseurbnb/MasseurBnb';
+import ServicesMarketplace from './services/ServicesMarketplace';
 
 export default function MasseurProApp() {
   const { user, isLoading: isUserLoading } = useUser();
@@ -152,6 +154,10 @@ export default function MasseurProApp() {
             />;
         case 'road-trip':
             return <RoadTripPlanner userTier={userTier} />;
+        case 'masseurbnb':
+            return <MasseurBnb userTier={userTier} />;
+        case 'services':
+            return <ServicesMarketplace userTier={userTier} />;
         case 'revenue':
             return <RevenueDashboard userTier={userTier} />;
         case 'clients':
