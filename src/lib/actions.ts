@@ -9,6 +9,7 @@ import type { Forecast } from "./types";
 
 export async function predictAllDemandsAction(): Promise<Forecast[]> {
   const forecasts: Forecast[] = [];
+  // Process cities one by one to avoid rate limiting
   for (const city of cities) {
     try {
       const result = await predictMassageDemand({
