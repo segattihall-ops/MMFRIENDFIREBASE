@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -66,12 +65,17 @@ export default function MasseurProApp() {
   
   const handleCitySelect = useCallback((cityName: string | null) => {
     setSelectedCity(cityName);
-    if (cityName) {
+    if (cityName && (user?.tier === 'gold' || user?.tier === 'platinum')) {
       setActiveTab('planner');
-    } else {
+    } else if (cityName) {
+      // If user is free or silver, we can decide if we want to show a limited planner or just an upgrade message.
+      // For now, let's switch to planner tab, the planner component will handle the gating.
+       setActiveTab('planner');
+    }
+     else {
       setActiveTab('dashboard');
     }
-  }, []);
+  }, [user?.tier]);
 
   const handleTabSelect = (tab: ActiveTab) => {
      if (tab === 'dashboard') {
@@ -127,7 +131,7 @@ export default function MasseurProApp() {
   const renderContent = () => {
     const userTier = user?.tier || 'free';
     
-    if (activeTab === 'planner' && selectedCity) {
+    if (activeTab === 'planner') {
        return <Planner 
             selectedCityName={selectedCity} 
             onCitySelect={handleCitySelect} 
@@ -154,13 +158,6 @@ export default function MasseurProApp() {
             return <SafetyReport userTier={userTier} />;
         case 'admin':
             return user?.isAdmin ? <AdminDashboard /> : <p>Access Denied</p>;
-        case 'planner':
-             return <Planner 
-                selectedCityName={null} 
-                onCitySelect={handleCitySelect} 
-                forecastData={forecastData}
-                userTier={userTier}
-            />
         default:
              return <Heatmap 
                 forecastData={forecastData} 
