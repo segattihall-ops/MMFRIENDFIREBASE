@@ -65,7 +65,7 @@ export default function SubscribePage() {
              <CardDescription>For maximizing your business.</CardDescription>
             <p className="text-3xl font-bold pt-2">
               $99<span className="text-sm font-normal text-muted-foreground">/mo</span>
-            </p>
+            p>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
             <ul className="space-y-2">
