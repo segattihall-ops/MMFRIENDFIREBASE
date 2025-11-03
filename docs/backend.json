@@ -1,0 +1,345 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the MasseurFriend application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "userName": {
+          "type": "string",
+          "description": "User's displayed name."
+        },
+        "userTier": {
+          "type": "string",
+          "description": "The user's tier (e.g., free, gold, platinum)."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Indicates if the user is an administrator."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "userName",
+        "userTier",
+        "isAdmin"
+      ]
+    },
+    "City": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "City",
+      "type": "object",
+      "description": "Represents a city for which demand forecasting and trip planning are available.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the City entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the city."
+        },
+        "state": {
+          "type": "string",
+          "description": "State the city is located in."
+        },
+        "population": {
+          "type": "number",
+          "description": "Population of the city."
+        },
+        "lgbtqIndex": {
+          "type": "number",
+          "description": "LGBTQ+ index of the city."
+        },
+        "stayArea1": {
+          "type": "string",
+          "description": "Primary stay area in the city."
+        },
+        "stayArea2": {
+          "type": "string",
+          "description": "Secondary stay area in the city."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "state",
+        "population",
+        "lgbtqIndex",
+        "stayArea1",
+        "stayArea2"
+      ]
+    },
+    "Forecast": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Forecast",
+      "type": "object",
+      "description": "Represents the demand forecast for a specific city on a specific date.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Forecast entity."
+        },
+        "cityId": {
+          "type": "string",
+          "description": "Reference to City. (Relationship: City 1:N Forecast)"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date for which the forecast is generated.",
+          "format": "date-time"
+        },
+        "spikeProb": {
+          "type": "number",
+          "description": "Probability of a demand spike on the given date."
+        }
+      },
+      "required": [
+        "id",
+        "cityId",
+        "date",
+        "spikeProb"
+      ]
+    },
+    "TripPlan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TripPlan",
+      "type": "object",
+      "description": "Represents a user's planned trip to a city.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the TripPlan entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N TripPlan)"
+        },
+        "cityId": {
+          "type": "string",
+          "description": "Reference to City. (Relationship: City 1:N TripPlan)"
+        },
+        "month": {
+          "type": "number",
+          "description": "Month of the planned trip (1-12)."
+        },
+        "suggestedRate": {
+          "type": "number",
+          "description": "AI suggested service rate for the trip."
+        },
+        "expectedBookings": {
+          "type": "number",
+          "description": "AI expected number of bookings for the trip."
+        },
+        "projectedRevenue": {
+          "type": "number",
+          "description": "AI projected revenue for the trip."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "cityId",
+        "month",
+        "suggestedRate",
+        "expectedBookings",
+        "projectedRevenue"
+      ]
+    },
+    "CompetitorData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CompetitorData",
+      "type": "object",
+      "description": "Represents competitor data for a specific city.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the CompetitorData entity."
+        },
+        "cityId": {
+          "type": "string",
+          "description": "Reference to City. (Relationship: City 1:N CompetitorData)"
+        },
+        "totalActive": {
+          "type": "number",
+          "description": "Total number of active competitors."
+        },
+        "saturation": {
+          "type": "string",
+          "description": "Market saturation level (Low, Medium, High)."
+        },
+        "avgRate": {
+          "type": "number",
+          "description": "Average service rate of competitors."
+        }
+      },
+      "required": [
+        "id",
+        "cityId",
+        "totalActive",
+        "saturation",
+        "avgRate"
+      ]
+    },
+    "SeasonalData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SeasonalData",
+      "type": "object",
+      "description": "Represents data for a specific season or month.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SeasonalData entity."
+        },
+        "month": {
+          "type": "number",
+          "description": "The month of the year represented (1-12)."
+        },
+        "optimalDays": {
+          "type": "string",
+          "description": "Optimal days for planning a trip during the month."
+        },
+        "multiplier": {
+          "type": "number",
+          "description": "Multiplier used to adjust forecasts/pricing for the month."
+        }
+      },
+      "required": [
+        "id",
+        "month",
+        "optimalDays",
+        "multiplier"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles.  The 'userId' parameter corresponds to the Firebase Auth UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/trip_plans/{tripPlanId}",
+        "definition": {
+          "entityName": "TripPlan",
+          "schema": {
+            "$ref": "#/backend/entities/TripPlan"
+          },
+          "description": "Stores trip plans for a specific user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user who owns the trip plan."
+            },
+            {
+              "name": "tripPlanId",
+              "description": "The unique identifier for the trip plan."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/cities/{cityId}",
+        "definition": {
+          "entityName": "City",
+          "schema": {
+            "$ref": "#/backend/entities/City"
+          },
+          "description": "Stores city data. Accessible to all authenticated users for read operations. Write access restricted to admins.",
+          "params": [
+            {
+              "name": "cityId",
+              "description": "The unique identifier for the city."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/cities/{cityId}/forecasts/{forecastId}",
+        "definition": {
+          "entityName": "Forecast",
+          "schema": {
+            "$ref": "#/backend/entities/Forecast"
+          },
+          "description": "Stores forecast data for a specific city. Accessible to all authenticated users for read operations. Write access restricted to admins.",
+          "params": [
+            {
+              "name": "cityId",
+              "description": "The unique identifier for the city."
+            },
+            {
+              "name": "forecastId",
+              "description": "The unique identifier for the forecast."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/cities/{cityId}/competitor_data/{competitorDataId}",
+        "definition": {
+          "entityName": "CompetitorData",
+          "schema": {
+            "$ref": "#/backend/entities/CompetitorData"
+          },
+          "description": "Stores competitor data for a specific city. Accessible to all authenticated users for read operations. Write access restricted to admins.",
+          "params": [
+            {
+              "name": "cityId",
+              "description": "The unique identifier for the city."
+            },
+            {
+              "name": "competitorDataId",
+              "description": "The unique identifier for the competitor data."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/seasonal_data/{seasonalDataId}",
+        "definition": {
+          "entityName": "SeasonalData",
+          "schema": {
+            "$ref": "#/backend/entities/SeasonalData"
+          },
+          "description": "Stores seasonal data. Accessible to all authenticated users for read operations. Write access restricted to admins.",
+          "params": [
+            {
+              "name": "seasonalDataId",
+              "description": "The unique identifier for the seasonal data."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the MasseurFriend application's core features, including demand forecasting, competitor analysis, trip planning, and user authentication, while adhering to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are Not Filters).\n\n**Authorization Independence (Denormalization):**\n\n*   `TripPlan` documents include the `userId`. This denormalization is critical for authorization. Security rules can enforce that only the user with the matching `userId` can read, update, or delete the `TripPlan` without needing to `get()` data from the `/users/{userId}` document. This enables atomic operations and simplifies security rules.\n\n**Structural Segregation (Homogeneous Security Posture):**\n\n*   User-specific data (`TripPlan`) is stored under `/users/{userId}`, ensuring that all documents within a user's subcollection have the same ownership-based security requirements.\n*   Global data (`City`, `Forecast`, `CompetitorData`, `SeasonalData`) is stored in root-level collections. These collections are designed for broader read access (e.g., any authenticated user can read city data) but write access is restricted (e.g., only admins can update city data).\n\n**Access Modeling:**\n\n*   **Path-Based Ownership:** The `/users/{userId}/trip_plans/{tripPlanId}` path establishes clear ownership. Only the user identified by `{userId}` can manage trip plans within their dedicated subcollection.\n*   **Global Roles (DBAC):** The design anticipates a potential `/roles_admin/{uid}` collection (not explicitly defined in the path list but implied by the entities).  The existence of a document in this collection grants admin privileges.\n\n**QAPs (Rules are Not Filters):**\n\n*   The data structure supports secure list operations. For example, listing trip plans under `/users/{userId}/trip_plans` is secure because the rules can easily filter based on `request.auth.uid == userId` without needing to inspect each document's content.\n*   The segregation of user-owned data into `/users/{userId}` subcollections prevents mixing data with different access requirements within the same collection. Admin-controlled global data is separated from user-controlled data.\n\n**Invariants:**\n\n*   The structure facilitates enforcing invariants. For instance, security rules can ensure that the `userId` in a `TripPlan` document cannot be changed after creation, preserving ownership integrity.\n*   Timestamps (if added to the entities) can be similarly protected to ensure they are set only on creation and not modified afterward."
+  }
+}
