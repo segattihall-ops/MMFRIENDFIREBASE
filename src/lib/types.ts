@@ -37,3 +37,14 @@ export type User = {
   status: 'active' | 'canceled';
   revenue: number;
 };
+
+export type Review = {
+    id: string;
+    reviewerId: string;
+    revieweeId: string;
+    rating: number;
+    comment: string;
+    createdAt: string; // ISO date string
+}
+
+    
