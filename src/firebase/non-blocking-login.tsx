@@ -4,9 +4,12 @@ import {
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
 import { toast } from '@/hooks/use-toast';
+import { getFirestore, doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from './non-blocking-updates';
+import type { User } from '@/lib/types';
+
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -24,7 +27,22 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 /** Initiate email/password sign-up (non-blocking). */
 export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
   // CRITICAL: Call createUserWithEmailAndPassword directly. Do NOT use 'await createUserWithEmailAndPassword(...)'.
-  createUserWithEmailAndPassword(authInstance, email, password).catch(error => {
+  createUserWithEmailAndPassword(authInstance, email, password)
+  .then(userCredential => {
+    // After user is created in Auth, create their document in Firestore.
+    const user = userCredential.user;
+    const db = getFirestore(authInstance.app);
+    const userRef = doc(db, 'users', user.uid);
+    const newUser: User = {
+        id: user.uid,
+        email: user.email || '',
+        tier: 'free',
+        status: 'active',
+        revenue: 0,
+    };
+    setDocumentNonBlocking(userRef, newUser, { merge: false });
+  })
+  .catch(error => {
     let description = error.message;
     if (error.code === 'auth/email-already-in-use') {
         description = "This email is already in use. Please sign in or use a different email.";
