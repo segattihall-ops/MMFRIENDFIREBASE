@@ -12,6 +12,7 @@ import Planner from './planner/Planner';
 import RevenueDashboard from './revenue/RevenueDashboard';
 import ClientCrm from './crm/ClientCrm';
 import CommunityForum from './community/CommunityForum';
+import SafetyReport from './safety/SafetyReport';
 import AdminDashboard from './admin/AdminDashboard';
 import { useToast } from '@/hooks/use-toast';
 import { cities } from '@/lib/data';
@@ -19,7 +20,7 @@ import { cities } from '@/lib/data';
 export default function MasseurProApp() {
   const [showLogin, setShowLogin] = useState(true);
   const [user, setUser] = useState<{ name: string; tier: 'platinum' | 'gold' | 'silver' | 'free', isAdmin: boolean } | null>(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   
   const [forecastData, setForecastData] = useState<Forecast[]>([]);
@@ -149,6 +150,8 @@ export default function MasseurProApp() {
             return <ClientCrm userTier={userTier} />;
         case 'community':
             return <CommunityForum userTier={userTier} />;
+        case 'safety':
+            return <SafetyReport userTier={userTier} />;
         case 'admin':
             return user?.isAdmin ? <AdminDashboard /> : <p>Access Denied</p>;
         case 'planner':

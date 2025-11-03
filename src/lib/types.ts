@@ -28,7 +28,7 @@ export type CompetitorData = {
     avgRate: number;
 };
 
-export type ActiveTab = 'dashboard' | 'planner' | 'revenue' | 'clients' | 'community' | 'admin';
+export type ActiveTab = 'dashboard' | 'planner' | 'revenue' | 'clients' | 'community' | 'admin' | 'safety';
 
 export type User = {
   id: string;
