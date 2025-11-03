@@ -5,50 +5,89 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star, MessageSquare } from 'lucide-react';
-
-// Mock data - replace with real data from Firestore
-const mockUser = {
-  name: 'John D.',
-  email: 'john.d@example.com',
-  avatarUrl: 'https://picsum.photos/seed/user1/200/200',
-  memberSince: 'January 2023',
-  tier: 'Platinum',
-  avgRating: 4.8,
-  reviewCount: 15,
-};
-
-const mockReviews = [
-  { id: 1, author: 'Mark S.', rating: 5, comment: 'Excellent service, very professional and punctual. Highly recommend!', date: '2 weeks ago' },
-  { id: 2, author: 'David P.', rating: 4, comment: 'Great massage, really helped with my back pain. Would book again.', date: '1 month ago' },
-  { id: 3, author: 'Chris T.', rating: 5, comment: 'One of the best massages I have ever had. John is incredibly skilled.', date: '3 months ago' },
-];
+import { useDoc, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, orderBy } from 'firebase/firestore';
+import type { User, Review } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDistanceToNow } from 'date-fns';
 
 interface UserProfileProps {
   userId: string;
 }
 
 const UserProfile = ({ userId }: UserProfileProps) => {
-  // In the future, you would use the userId to fetch the user's data
-  // and their reviews from Firestore using the useDoc and useCollection hooks.
-  // For now, we'll use mock data.
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => 
+    firestore ? doc(firestore, 'users', userId) : null
+  , [firestore, userId]);
+  
+  const reviewsQuery = useMemoFirebase(() => 
+    firestore ? query(collection(firestore, 'users', userId, 'reviews'), orderBy('createdAt', 'desc')) : null
+  , [firestore, userId]);
+
+  const { data: user, isLoading: isLoadingUser } = useDoc<User>(userDocRef);
+  const { data: reviews, isLoading: isLoadingReviews } = useCollection<Review>(reviewsQuery);
+
+  // Helper component for a single review
+  const ReviewItem = ({ review }: { review: Review }) => {
+    const { data: reviewer } = useDoc<User>(useMemoFirebase(() => firestore ? doc(firestore, 'users', review.reviewerId) : null, [firestore, review.reviewerId]));
+
+    return (
+       <div className="border-b pb-4 last:border-b-0">
+          <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center gap-2">
+                  <Avatar className="w-8 h-8">
+                      <AvatarImage src={`https://picsum.photos/seed/rev${review.id}/40/40`} alt={reviewer?.email} />
+                      <AvatarFallback>{reviewer ? reviewer.email.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+                  </Avatar>
+                  <p className="font-semibold">{reviewer?.email.split('@')[0] || 'Anonymous'}</p>
+              </div>
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} />
+                  ))}
+              </div>
+          </div>
+        <p className="text-muted-foreground pl-10">{review.comment}</p>
+        <p className="text-xs text-muted-foreground pl-10 mt-1">
+            {review.createdAt ? formatDistanceToNow(new Date(review.createdAt), { addSuffix: true }) : ''}
+        </p>
+      </div>
+    )
+  }
+
 
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader className="flex flex-col items-center text-center">
-          <Avatar className="w-24 h-24 mb-4 border-4 border-primary">
-            <AvatarImage src={mockUser.avatarUrl} alt={mockUser.name} />
-            <AvatarFallback>{mockUser.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <CardTitle className="text-3xl font-bold font-headline">{mockUser.name}</CardTitle>
-          <CardDescription className="text-muted-foreground">{mockUser.email}</CardDescription>
-          <div className="flex items-center gap-4 pt-2">
-            <div className="flex items-center gap-1">
-                <Star className="w-5 h-5 text-yellow-500" />
-                <span className="font-bold">{mockUser.avgRating}</span>
-                <span className="text-sm text-muted-foreground">({mockUser.reviewCount} reviews)</span>
-            </div>
-          </div>
+            {isLoadingUser ? (
+                <>
+                    <Skeleton className="w-24 h-24 rounded-full mb-4" />
+                    <Skeleton className="h-8 w-40 mb-2" />
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-5 w-32 mt-2" />
+                </>
+            ) : user ? (
+                <>
+                    <Avatar className="w-24 h-24 mb-4 border-4 border-primary">
+                        <AvatarImage src={`https://picsum.photos/seed/${user.id}/200/200`} alt={user.email} />
+                        <AvatarFallback>{user.email.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <CardTitle className="text-3xl font-bold font-headline">{user.email.split('@')[0]}</CardTitle>
+                    <CardDescription className="text-muted-foreground">{user.email}</CardDescription>
+                    <div className="flex items-center gap-4 pt-2">
+                        <div className="flex items-center gap-1">
+                            <Star className="w-5 h-5 text-yellow-500" />
+                            <span className="font-bold">{(reviews || []).reduce((acc, r) => acc + r.rating, 0) / (reviews?.length || 1)}</span>
+                            <span className="text-sm text-muted-foreground">({reviews?.length || 0} reviews)</span>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <p>User not found.</p>
+            )}
         </CardHeader>
       </Card>
 
@@ -58,28 +97,25 @@ const UserProfile = ({ userId }: UserProfileProps) => {
             <MessageSquare className="w-6 h-6 text-primary" />
             User Reviews
           </CardTitle>
-          <CardDescription>What others are saying about {mockUser.name}</CardDescription>
+          <CardDescription>What others are saying about {user?.email.split('@')[0] || 'this user'}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {mockReviews.map((review) => (
-            <div key={review.id} className="border-b pb-4 last:border-b-0">
-                <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="w-8 h-8">
-                            <AvatarImage src={`https://picsum.photos/seed/rev${review.id}/40/40`} alt={review.author} />
-                            <AvatarFallback>{review.author.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <p className="font-semibold">{review.author}</p>
+            {isLoadingReviews ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="space-y-2 border-b pb-4 last:border-b-0">
+                        <div className="flex items-center gap-2">
+                             <Skeleton className="w-8 h-8 rounded-full" />
+                             <Skeleton className="h-4 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-full ml-10" />
+                        <Skeleton className="h-4 w-1/2 ml-10" />
                     </div>
-                     <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} />
-                        ))}
-                    </div>
-                </div>
-              <p className="text-muted-foreground pl-10">{review.comment}</p>
-            </div>
-          ))}
+                ))
+            ) : reviews && reviews.length > 0 ? (
+                reviews.map((review) => <ReviewItem key={review.id} review={review} />)
+            ) : (
+                <p className="text-muted-foreground text-center py-8">No reviews yet.</p>
+            )}
         </CardContent>
       </Card>
     </div>
