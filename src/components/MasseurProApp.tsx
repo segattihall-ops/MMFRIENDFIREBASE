@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -68,9 +69,7 @@ export default function MasseurProApp() {
     if (cityName && (user?.tier === 'gold' || user?.tier === 'platinum')) {
       setActiveTab('planner');
     } else if (cityName) {
-      // If user is free or silver, we can decide if we want to show a limited planner or just an upgrade message.
-      // For now, let's switch to planner tab, the planner component will handle the gating.
-       setActiveTab('planner');
+      setActiveTab('planner');
     }
      else {
       setActiveTab('dashboard');
@@ -100,11 +99,10 @@ export default function MasseurProApp() {
         } catch (error) {
             console.error(error);
             if (!isCancelled) {
-                // Fallback for demo purposes if AI fails
                 const fallbackForecasts = cities.map(city => ({
                     city: city.name,
                     state: city.state,
-                    demandScore: Math.floor(Math.random() * 60) + 30, // Random score between 30-90
+                    demandScore: Math.floor(Math.random() * 60) + 30,
                     lgbtqIndex: city.lgbtqIndex,
                 }));
                 setForecastData(fallbackForecasts);

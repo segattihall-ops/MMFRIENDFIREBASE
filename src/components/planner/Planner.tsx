@@ -76,8 +76,10 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
   }, [selectedCity, selectedMonth, forecastData, toast, userTier]);
 
   useEffect(() => {
-    getPricing();
-  }, [getPricing]);
+    if (selectedCityName) {
+      getPricing();
+    }
+  }, [selectedCityName, getPricing]);
 
   const handleGenerateItinerary = async () => {
     if (!selectedCity || !pricingData) return;
@@ -199,7 +201,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center h-40">
-                                <p className="text-sm text-muted-foreground text-center">Could not load pricing data.</p>
+                                <p className="text-sm text-muted-foreground text-center">Could not load pricing data. Please select a city.</p>
                                 </div>
                             )}
                             </>
