@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Briefcase, Loader2, PlusCircle } from "lucide-react";
 import AddServiceListing from './AddServiceListing';
 import ServiceListingCard from './ServiceListingCard';
@@ -29,24 +28,6 @@ export default function ServicesMarketplace({ userTier, onViewProfile }: Service
 
   const { data: listings, isLoading: isLoadingListings } = useCollection<ServiceListing>(listingsQuery);
 
-  if (userTier !== 'platinum') {
-      return (
-        <Card className="text-center p-8">
-          <CardHeader>
-            <CardTitle className="font-headline text-2xl">This is a Platinum Feature</CardTitle>
-            <CardDescription className="my-4">
-              Upgrade to the Platinum plan to access the Services Marketplace, where you can find and advertise related professional services.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/subscribe">
-              <Button>Upgrade to Platinum</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      )
-  }
-
   return (
     <div className="space-y-6">
        <div className="flex justify-between items-center">
@@ -64,6 +45,7 @@ export default function ServicesMarketplace({ userTier, onViewProfile }: Service
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 3 }).map((_, i) => (
                     <Card key={i}>
+                        <div className="aspect-video w-full bg-muted"></div>
                         <CardHeader><Skeleton className="h-5 w-3/4" /></CardHeader>
                         <CardContent className="space-y-4">
                             <Skeleton className="h-4 w-full" />
