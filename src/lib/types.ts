@@ -28,12 +28,12 @@ export type CompetitorData = {
     avgRate: number;
 };
 
-export type ActiveTab = 'dashboard' | 'heatmap' | 'planner' | 'revenue' | 'clients' | 'community' | 'admin';
+export type ActiveTab = 'dashboard' | 'planner' | 'revenue' | 'clients' | 'community' | 'admin';
 
 export type User = {
   id: string;
   email: string;
-  tier: 'gold' | 'platinum';
+  tier: 'gold' | 'platinum' | 'silver' | 'free';
   status: 'active' | 'canceled';
   revenue: number;
 };

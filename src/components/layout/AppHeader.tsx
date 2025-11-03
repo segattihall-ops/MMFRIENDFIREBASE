@@ -2,25 +2,36 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sun, Moon, LogOut, Gem } from "lucide-react";
+import { Sun, Moon, LogOut, Gem, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 interface AppHeaderProps {
-  user: { name: string; tier: 'platinum' | 'gold', isAdmin: boolean } | null;
+  user: { name: string; tier: 'platinum' | 'gold' | 'silver' | 'free', isAdmin: boolean } | null;
   onLogout: () => void;
   darkMode: boolean;
   setDarkMode: (dark: boolean) => void;
 }
 
 const AppLogo = () => (
-    <svg
-      viewBox="0 0 1000 1000"
-      role="img"
-      aria-label="MasseurPro Logo"
-      className="h-8 w-8 text-primary"
-      fill="currentColor"
+    <svg 
+        viewBox="0 0 32 32" 
+        xmlns="http://www.w3.org/2000/svg" 
+        aria-hidden="true" 
+        role="presentation" 
+        focusable="false" 
+        className="h-8 w-8 text-primary block"
+        fill="currentColor"
     >
-      <path d="M499.3 125.7C293.1 125.7 125 294.2 125 500.8s168.1 375.1 374.3 375.1S875 707.4 875 500.8c0-206.6-168.1-375.1-375.7-375.1zM499.3 805.4c-168.1 0-304.9-137-304.9-304.6 0-167.6 136.8-304.6 304.9-304.6s304.9 137 304.9 304.6c0 167.6-136.8 304.6-304.9 304.6zm136.2-416.5c-29.3-33-72.3-51.4-118-49.4-44.1 2-86.4 20.3-116.5 51.5-30.1 31.1-46.7 73-44.7 117.1 2 44.1 20.3 86.4 51.4 116.5 31.1 30.1 73 46.7 117.1 44.7 44.1-2 86.4-20.3 116.5-51.4 30.1-31.1 46.7-73 44.7-117.1-2.1-44.1-20.4-86.4-50.5-111.9zm-136.2 249.7c-61.9 0-112.3-50.5-112.3-112.3S437.2 414 499.1 414s112.3 50.5 112.3 112.3-50.4 112.3-112.3 112.3z" />
+        <path d="M16 1c2.008 0 3.937.78 5.303 2.146C22.67 4.513 23.45 6.442 23.45 8.45c0 2.007-.78 3.936-2.147 5.302-1.365 1.366-3.294 2.148-5.303 2.148-2.008 0-3.937-.782-5.302-2.148C9.33 12.385 8.55 10.456 8.55 8.45c0-2.008.78-3.937 2.148-5.304A7.495 7.495 0 0 1 16 1zm0 2c-1.506 0-2.953.585-3.996 1.628-1.043 1.042-1.628 2.49-1.628 3.997s.585 2.954 1.628 3.996c1.043 1.043 2.49 1.628 3.996 1.628s2.954-.585 3.997-1.628c1.042-1.042 1.628-2.49 1.628-3.996s-.586-2.955-1.628-3.997A5.626 5.626 0 0 0 16 3zm0 14.5a7.5 7.5 0 0 1 7.45 7.05v7.45H21.5v-7.45a5.5 5.5 0 0 0-5.5-5.5 5.5 5.5 0 0 0-5.5 5.5v7.45H8.55v-7.45A7.5 7.5 0 0 1 16 17.5z"></path>
     </svg>
 );
 
@@ -29,41 +40,61 @@ export default function AppHeader({ user, onLogout, darkMode, setDarkMode }: App
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <AppLogo />
-            <h1 className="text-xl font-bold text-foreground">MasseurPro</h1>
-          </div>
+            <h1 className="text-xl font-bold text-foreground hidden sm:block">MasseurPro</h1>
+          </Link>
           
-          <div className="flex items-center gap-3">
-             <Link href="/subscribe">
-              <Button variant="ghost" size="sm">
-                <Gem className="mr-2 h-4 w-4" />
-                Upgrade
+          <div className="flex items-center gap-2">
+             <Link href="/subscribe" className="hidden sm:block">
+              <Button variant="ghost" size="sm" className="font-semibold">
+                Platinum Plans
               </Button>
             </Link>
-            <p className="text-sm font-medium text-muted-foreground hidden sm:block">
-              Welcome, {user?.name || 'User'}!
-            </p>
-            {user && (
-              <Badge 
-                variant={user.tier === 'platinum' ? 'default' : 'secondary'} 
-                className="capitalize border-transparent"
-              >
-                {user.tier}
-              </Badge>
-            )}
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setDarkMode(!darkMode)}
-                aria-label="Toggle dark mode"
-            >
-                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={onLogout} aria-label="Logout">
-              <LogOut className="h-5 w-5" />
-            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex gap-2 items-center rounded-full px-3 py-1.5 h-auto">
+                    <UserIcon className="w-5 h-5 text-muted-foreground" />
+                    <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center">
+                        <UserIcon className="w-4 h-4 text-foreground"/>
+                    </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                    <p className="font-medium">{user?.name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground font-normal">Welcome back!</p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {user && (
+                    <DropdownMenuItem disabled>
+                        <Badge 
+                            variant={user.tier === 'platinum' ? 'default' : 'secondary'} 
+                            className="capitalize"
+                        >
+                            {user.tier} Plan
+                        </Badge>
+                    </DropdownMenuItem>
+                )}
+                 <Link href="/subscribe">
+                    <DropdownMenuItem>
+                        <Gem className="mr-2 h-4 w-4" />
+                        <span>Upgrade</span>
+                    </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+                 <DropdownMenuItem onClick={() => setDarkMode(!darkMode)}>
+                    {darkMode ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                    <span>Toggle Theme</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
           </div>
         </div>
       </div>
