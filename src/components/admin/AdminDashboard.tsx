@@ -10,7 +10,11 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 
-const AdminDashboard = () => {
+interface AdminDashboardProps {
+    onViewProfile: (userId: string) => void;
+}
+
+const AdminDashboard = ({ onViewProfile }: AdminDashboardProps) => {
     const firestore = useFirestore();
 
     const usersQuery = useMemoFirebase(() => {
@@ -109,7 +113,7 @@ const AdminDashboard = () => {
                                     ))
                                 ) : (
                                     users?.map((user) => (
-                                    <TableRow key={user.id}>
+                                    <TableRow key={user.id} onClick={() => onViewProfile(user.id)} className="cursor-pointer">
                                         <TableCell className="font-medium">{user.email}</TableCell>
                                         <TableCell>
                                             <Badge variant={user.tier === 'platinum' ? 'default' : 'secondary'} className="capitalize">{user.tier || 'free'}</Badge>

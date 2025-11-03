@@ -15,6 +15,7 @@ import ClientCrm from './crm/ClientCrm';
 import CommunityForum from './community/CommunityForum';
 import SafetyReport from './safety/SafetyReport';
 import AdminDashboard from './admin/AdminDashboard';
+import UserProfile from './profile/UserProfile';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/auth/use-user';
 import { signOut, Auth } from 'firebase/auth';
@@ -30,6 +31,7 @@ export default function MasseurProApp() {
   const [forecastData, setForecastData] = useState<Forecast[]>([]);
   const [isLoadingForecast, setIsLoadingForecast] = useState(true);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   
   const { toast } = useToast();
 
@@ -54,6 +56,7 @@ export default function MasseurProApp() {
       });
       setActiveTab('dashboard');
       setSelectedCity(null);
+      setViewingProfileId(null);
     } catch (error) {
       console.error("Logout Error:", error);
       toast({
@@ -77,9 +80,15 @@ export default function MasseurProApp() {
   const handleTabSelect = (tab: ActiveTab) => {
      if (tab === 'dashboard') {
       setSelectedCity(null);
+      setViewingProfileId(null);
     }
     setActiveTab(tab);
   }
+
+  const handleViewProfile = (userId: string) => {
+    setViewingProfileId(userId);
+    setActiveTab('profile');
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -129,6 +138,10 @@ export default function MasseurProApp() {
         />
     }
 
+    if (activeTab === 'profile' && viewingProfileId) {
+        return <UserProfile userId={viewingProfileId} />;
+    }
+
     switch (activeTab) {
         case 'dashboard':
             return <Heatmap 
@@ -148,7 +161,7 @@ export default function MasseurProApp() {
         case 'safety':
             return <SafetyReport userTier={userTier} />;
         case 'admin':
-            return appUser?.isAdmin ? <AdminDashboard /> : <p>Access Denied</p>;
+            return appUser?.isAdmin ? <AdminDashboard onViewProfile={handleViewProfile} /> : <p>Access Denied</p>;
         default:
              return <Heatmap 
                 forecastData={forecastData} 
