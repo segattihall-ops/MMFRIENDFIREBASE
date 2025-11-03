@@ -39,7 +39,9 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [actionInProgress, setActionInProgress] = useState(false);
+
 
   useEffect(() => {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
@@ -50,9 +52,9 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
   }, []);
 
   useEffect(() => {
-    setIsLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
         setIsLoading(false);
+        setActionInProgress(false);
         if (user) {
             toast({
                 title: "Login Successful",
@@ -61,6 +63,7 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
         }
     }, (error: AuthError) => {
         setIsLoading(false);
+        setActionInProgress(false);
         toast({
             variant: "destructive",
             title: "Authentication Error",
@@ -87,7 +90,7 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
         localStorage.removeItem('rememberedEmail');
     }
     
-    setIsLoading(true);
+    setActionInProgress(true);
 
     if (action === 'signIn') {
         initiateEmailSignIn(auth, email, password);
@@ -95,6 +98,14 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
         initiateEmailSignUp(auth, email, password);
     }
   };
+  
+  if (isLoading) {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background transition-colors duration-300">
@@ -116,6 +127,7 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signIn')}
+              disabled={actionInProgress}
             />
           </div>
           <div className="space-y-2">
@@ -127,6 +139,7 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signIn')}
+               disabled={actionInProgress}
             />
           </div>
           <div className="flex items-center space-x-2">
@@ -134,17 +147,18 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
                 id="remember" 
                 checked={rememberMe}
                 onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                disabled={actionInProgress}
             />
             <Label htmlFor="remember" className="text-sm font-normal">Remember me</Label>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-           <Button onClick={() => handleAuthAction('signIn')} className="w-full font-bold" size="lg" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+           <Button onClick={() => handleAuthAction('signIn')} className="w-full font-bold" size="lg" disabled={actionInProgress}>
+            {actionInProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
-           <Button onClick={() => handleAuthAction('signUp')} className="w-full" size="lg" variant="secondary" disabled={isLoading}>
-             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+           <Button onClick={() => handleAuthAction('signUp')} className="w-full" size="lg" variant="secondary" disabled={actionInProgress}>
+             {actionInProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign Up
           </Button>
           <Button
