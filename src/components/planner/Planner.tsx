@@ -312,7 +312,8 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData }
               <CardContent>
                 <GoogleTrendsWidget
                   keyword="massage"
-                  geo={`US-${selectedCity.state}`}
+                  geo={selectedCity.state ? `US-${selectedCity.state}`: 'US'}
+                  timeRange='today 3-m'
                 />
               </CardContent>
             </Card>

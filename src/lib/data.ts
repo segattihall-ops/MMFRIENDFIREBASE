@@ -10,7 +10,12 @@ export const cities: City[] = [
   { name: "Houston", state: "TX", population: 2304580, lgbtqIndex: 82, stayArea1: "Montrose", stayArea2: "Heights" },
   { name: "Seattle", state: "WA", population: 737015, lgbtqIndex: 91, stayArea1: "Capitol Hill", stayArea2: "Fremont" },
   { name: "Atlanta", state: "GA", population: 498715, lgbtqIndex: 84, stayArea1: "Midtown", stayArea2: "Virginia Highland" },
-  { name: "Boston", state: "MA", population: 685094, lgbtqIndex: 89, stayArea1: "South End", stayArea2: "Back Bay" }
+  { name: "Boston", state: "MA", population: 685094, lgbtqIndex: 89, stayArea1: "South End", stayArea2: "Back Bay" },
+  { name: "Washington", state: "DC", population: 689545, lgbtqIndex: 90, stayArea1: "Dupont Circle", stayArea2: "Logan Circle" },
+  { name: "Philadelphia", state: "PA", population: 1603797, lgbtqIndex: 80, stayArea1: "Gayborhood", stayArea2: "Midtown Village" },
+  { name: "Phoenix", state: "AZ", population: 1608139, lgbtqIndex: 75, stayArea1: "Melrose District", stayArea2: "Downtown" },
+  { name: "San Diego", state: "CA", population: 1386932, lgbtqIndex: 87, stayArea1: "Hillcrest", stayArea2: "North Park" },
+  { name: "Denver", state: "CO", population: 715522, lgbtqIndex: 86, stayArea1: "Capitol Hill", stayArea2: "RiNo" }
 ];
 
 export const seasonalData: SeasonalData = {
