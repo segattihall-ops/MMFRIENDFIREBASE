@@ -5,7 +5,7 @@
  *
  * - generateOptimalPricing - A function that generates the optimal pricing.
  * - GenerateOptimalPricingInput - The input type for the generateOptimalPricing function.
- * - GenerateOptimalPricingOutput - The return type for the generateOptimalPricing function.
+ * - GenerateOptimalPricingOutput - The return type for the generateOptimalpricing function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -65,7 +65,7 @@ const prompt = ai.definePrompt({
   Seasonal Multiplier: {{multiplier}}
   Competitor Count: {{competitorCount}}
   Market Saturation: {{saturation}}
-  Average Service Rate: ${{avgRate}}/hr
+  Average Service Rate: \${{avgRate}}/hr
 
   Consider these factors to determine the suggested rate, expected bookings, and projected revenue. Ensure the suggested rate is competitive yet maximizes potential earnings. The explanation should be less than 100 words.
   Make sure that the suggested rate is a reasonable number.  Projected revenue should take into account the number of optimal days.
