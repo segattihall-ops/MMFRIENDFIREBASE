@@ -45,3 +45,5 @@ const GoogleTrendsWidget = ({ keyword, geo, type = "TIMESERIES" }: GoogleTrendsW
 export default GoogleTrendsWidget;
 
     
+
+    
