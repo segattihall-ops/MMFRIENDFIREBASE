@@ -7,6 +7,19 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Sun, Moon } from 'lucide-react';
 
+const AppLogo = () => (
+    <svg
+      viewBox="0 0 1000 1000"
+      role="img"
+      aria-label="MasseurPro Logo"
+      className="h-16 w-16 text-primary"
+      fill="currentColor"
+    >
+      <path d="M499.3 125.7C293.1 125.7 125 294.2 125 500.8s168.1 375.1 374.3 375.1S875 707.4 875 500.8c0-206.6-168.1-375.1-375.7-375.1zM499.3 805.4c-168.1 0-304.9-137-304.9-304.6 0-167.6 136.8-304.6 304.9-304.6s304.9 137 304.9 304.6c0 167.6-136.8 304.6-304.9 304.6zm136.2-416.5c-29.3-33-72.3-51.4-118-49.4-44.1 2-86.4 20.3-116.5 51.5-30.1 31.1-46.7 73-44.7 117.1 2 44.1 20.3 86.4 51.4 116.5 31.1 30.1 73 46.7 117.1 44.7 44.1-2 86.4-20.3 116.5-51.4 30.1-31.1 46.7-73 44.7-117.1-2.1-44.1-20.4-86.4-50.5-111.9zm-136.2 249.7c-61.9 0-112.3-50.5-112.3-112.3S437.2 414 499.1 414s112.3 50.5 112.3 112.3-50.4 112.3-112.3 112.3z" />
+    </svg>
+);
+
+
 interface LoginScreenProps {
   onLogin: (email: string, pass: string) => void;
   darkMode: boolean;
@@ -25,13 +38,13 @@ export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScr
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background transition-colors duration-300">
-      <Card className="w-full max-w-md shadow-2xl">
+      <Card className="w-full max-w-sm shadow-2xl border-none">
         <CardHeader className="text-center">
-          <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary via-purple-500 to-accent rounded-2xl flex items-center justify-center">
-            <span className="text-4xl" role="img" aria-label="Massage">💆</span>
-          </div>
-          <CardTitle className="text-3xl font-bold font-headline">MasseurPro</CardTitle>
-          <CardDescription>AI Market Intelligence Platform</CardDescription>
+            <div className="mx-auto mb-4">
+                <AppLogo />
+            </div>
+          <CardTitle className="text-3xl font-bold font-headline">Welcome to MasseurPro</CardTitle>
+          <CardDescription>Your AI market intelligence platform.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

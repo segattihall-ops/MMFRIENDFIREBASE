@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,51 @@ interface PlannerProps {
   onCitySelect: (cityName: string) => void;
   forecastData: Forecast[];
 }
+
+// GoogleTrendsWidget component for embedding real-time trends
+const GoogleTrendsWidget = ({ keyword, geo, timeRange = 'today 12-m' }: { keyword: string, geo: string, timeRange?: string }) => {
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  useEffect(() => {
+    const existingScript = document.querySelector('script[src="https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js"]');
+    if (existingScript) {
+        setScriptLoaded(true);
+        return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js";
+    script.async = true;
+    script.onload = () => setScriptLoaded(true);
+    document.body.appendChild(script);
+
+    return () => {
+      // Clean up script if component unmounts, though often it's fine to leave it.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!scriptLoaded || !widgetRef.current || !(window as any).trends) return;
+    
+    (window as any).trends.embed.renderExploreWidgetTo(
+      widgetRef.current,
+      "TIMESERIES",
+      {
+        comparisonItem: [{ keyword, geo, time: timeRange }],
+        category: 0,
+        property: ""
+      },
+      {
+        exploreQuery: `q=${encodeURIComponent(keyword)}&geo=${geo}&date=${timeRange}`,
+        guestPath: "https://trends.google.com:443/trends/embed/"
+      }
+    );
+  
+  }, [scriptLoaded, keyword, geo, timeRange, widgetRef]);
+
+  return <div ref={widgetRef} style={{ width: "100%", height: "400px" }} />;
+};
 
 export default function Planner({ selectedCityName, onCitySelect, forecastData }: PlannerProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -211,6 +256,16 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData }
                 <><Ticket className="mr-2 h-4 w-4" /> Generate Trip Itinerary</>
               )}
             </Button>
+          )}
+
+          {selectedCity && (
+            <div className="mt-6">
+              <h3 className="text-xl font-bold mb-4">Real-Time Google Trends for "Massage" in {selectedCity.name}</h3>
+              <GoogleTrendsWidget
+                keyword="massage"
+                geo={`US-${selectedCity.state}`}
+              />
+            </div>
           )}
         </CardContent>
       </Card>
