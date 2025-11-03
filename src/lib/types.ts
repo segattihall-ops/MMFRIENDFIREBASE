@@ -28,4 +28,12 @@ export type CompetitorData = {
     avgRate: number;
 };
 
-export type ActiveTab = 'dashboard' | 'heatmap' | 'planner' | 'revenue' | 'clients' | 'community';
+export type ActiveTab = 'dashboard' | 'heatmap' | 'planner' | 'revenue' | 'clients' | 'community' | 'admin';
+
+export type User = {
+  id: string;
+  email: string;
+  tier: 'gold' | 'platinum';
+  status: 'active' | 'canceled';
+  revenue: number;
+};

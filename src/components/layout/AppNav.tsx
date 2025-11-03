@@ -2,11 +2,12 @@
 
 import type { ActiveTab } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Map, Plane, DollarSign, Users, MessageSquare } from 'lucide-react';
+import { LayoutGrid, Map, Plane, DollarSign, Users, MessageSquare, ShieldCheck } from 'lucide-react';
 
 interface AppNavProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
+  user: { name: string; tier: 'platinum' | 'gold', isAdmin: boolean } | null;
 }
 
 const navItems = [
@@ -18,11 +19,16 @@ const navItems = [
   { id: 'community', label: 'Community', icon: MessageSquare }
 ] as const;
 
-export default function AppNav({ activeTab, setActiveTab }: AppNavProps) {
+const adminNavItem = { id: 'admin', label: 'Admin', icon: ShieldCheck } as const;
+
+
+export default function AppNav({ activeTab, setActiveTab, user }: AppNavProps) {
+  const allNavItems = user?.isAdmin ? [...navItems, adminNavItem] : navItems;
+  
   return (
     <div className="border-b">
       <nav className="max-w-7xl mx-auto flex overflow-x-auto -mb-px" aria-label="Tabs">
-        {navItems.map(tab => (
+        {allNavItems.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}

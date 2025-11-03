@@ -6,7 +6,7 @@ import { Sun, Moon, LogOut, Gem } from "lucide-react";
 import Link from "next/link";
 
 interface AppHeaderProps {
-  user: { name: string; tier: 'platinum' | 'gold' } | null;
+  user: { name: string; tier: 'platinum' | 'gold', isAdmin: boolean } | null;
   onLogout: () => void;
   darkMode: boolean;
   setDarkMode: (dark: boolean) => void;
