@@ -23,6 +23,8 @@ export const useGoogleTrends = ({ widgetRef, type, keyword, geo, time }: UseGoog
   const [isScriptLoaded, setScriptLoaded] = useState(false);
   const [isRendered, setIsRendered] = useState(false);
 
+  const trendsGeo = `US-${geo}`;
+
   useEffect(() => {
     const existingScript = document.querySelector('script[src="https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js"]');
 
@@ -58,12 +60,12 @@ export const useGoogleTrends = ({ widgetRef, type, keyword, geo, time }: UseGoog
                     widgetRef.current,
                     type,
                     {
-                        comparisonItem: [{ keyword, geo, time }],
+                        comparisonItem: [{ keyword, geo: trendsGeo, time }],
                         category: 0,
                         property: ""
                     },
                     {
-                        exploreQuery: `date=${time.replace(' ', '%20')}&geo=${geo}&q=${encodeURIComponent(keyword)}&hl=en`,
+                        exploreQuery: `date=${time.replace(' ', '%20')}&geo=${trendsGeo}&q=${encodeURIComponent(keyword)}&hl=en`,
                         guestPath: "https://trends.google.com:443/trends/embed/"
                     }
                 );
@@ -77,7 +79,7 @@ export const useGoogleTrends = ({ widgetRef, type, keyword, geo, time }: UseGoog
 
     return () => clearTimeout(handler);
     
-  }, [isScriptLoaded, keyword, geo, time, type, widgetRef]);
+  }, [isScriptLoaded, keyword, trendsGeo, time, type, widgetRef]);
 
   return { isLoaded: isScriptLoaded && isRendered };
 };

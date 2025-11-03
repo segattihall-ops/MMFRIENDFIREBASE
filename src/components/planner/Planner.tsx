@@ -237,11 +237,11 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                      <Card>
                         <CardHeader>
                             <CardTitle className="text-lg font-headline flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary"/>Real-Time Demand Trends</CardTitle>
-                             <CardDescription>90-day search interest for "massage therapy" in {selectedCity.state}.</CardDescription>
+                             <CardDescription>90-day search interest for "massage therapy" in {selectedCity.name}, {selectedCity.state}.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <GoogleTrendsWidget
-                                key={selectedCity.state}
+                                key={selectedCity.name}
                                 keyword="massage therapy"
                                 geo={selectedCity.state}
                             />
