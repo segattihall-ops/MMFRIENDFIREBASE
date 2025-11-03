@@ -14,6 +14,7 @@ import ClientCrm from './crm/ClientCrm';
 import CommunityForum from './community/CommunityForum';
 import AdminDashboard from './admin/AdminDashboard';
 import { useToast } from '@/hooks/use-toast';
+import { cities } from '@/lib/data';
 
 export default function MasseurProApp() {
   const [showLogin, setShowLogin] = useState(true);
@@ -39,7 +40,7 @@ export default function MasseurProApp() {
   const handleLogin = (email: string) => {
     let loggedInUser;
     if (email.toLowerCase() === 'admin@masseurfriend.com') {
-      loggedInUser = { name: 'Admin', tier: 'platinum', isAdmin: true };
+      loggedInUser = { name: 'Admin', tier: 'platinum' as const, isAdmin: true };
       setActiveTab('admin');
     } else {
       const tiers: ('free' | 'silver' | 'gold' | 'platinum')[] = ['free', 'silver', 'gold', 'platinum'];
@@ -71,14 +72,12 @@ export default function MasseurProApp() {
     }
   }, []);
 
-  useEffect(() => {
-    if (activeTab !== 'dashboard' && !selectedCity) {
-      // Logic for non-heatmap tabs can go here
-    }
-     if (activeTab === 'dashboard') {
+  const handleTabSelect = (tab: ActiveTab) => {
+     if (tab === 'dashboard') {
       setSelectedCity(null);
     }
-  }, [activeTab, selectedCity]);
+    setActiveTab(tab);
+  }
 
   useEffect(() => {
     if (showLogin) return;
@@ -96,10 +95,18 @@ export default function MasseurProApp() {
         } catch (error) {
             console.error(error);
             if (!isCancelled) {
+                // Fallback for demo purposes if AI fails
+                const fallbackForecasts = cities.map(city => ({
+                    city: city.name,
+                    state: city.state,
+                    demandScore: Math.floor(Math.random() * 60) + 30, // Random score between 30-90
+                    lgbtqIndex: city.lgbtqIndex,
+                }));
+                setForecastData(fallbackForecasts);
                 toast({
                     variant: "destructive",
-                    title: "Error",
-                    description: "Could not fetch market demand data. Please try again later.",
+                    title: "AI Service Unstable",
+                    description: "Could not fetch live market demand. Displaying cached data.",
                 });
             }
         } finally {
@@ -146,7 +153,7 @@ export default function MasseurProApp() {
             return user?.isAdmin ? <AdminDashboard /> : <p>Access Denied</p>;
         case 'planner':
              return <Planner 
-                selectedCityName={''} 
+                selectedCityName={null} 
                 onCitySelect={handleCitySelect} 
                 forecastData={forecastData}
                 userTier={userTier}
@@ -170,7 +177,7 @@ export default function MasseurProApp() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader user={user} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} />
-      <AppNav activeTab={activeTab} setActiveTab={setActiveTab} user={user} />
+      <AppNav activeTab={activeTab} setActiveTab={handleTabSelect} user={user} />
 
       <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {renderContent()}

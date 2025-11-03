@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cities, seasonalData } from '@/lib/data';
@@ -9,14 +9,14 @@ import type { Forecast, CompetitorData } from '@/lib/types';
 import { trackCompetitors } from '@/lib/utils';
 import { getOptimalPricingAction, generateItineraryAction } from '@/lib/actions';
 import type { GenerateOptimalPricingOutput } from '@/ai/flows/generate-optimal-pricing';
-import { BrainCircuit, Ticket, Users, Loader2, ArrowLeft, TrendingUp } from 'lucide-react';
+import { BrainCircuit, Ticket, Users, Loader2, ArrowLeft, TrendingUp, Plane } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ItineraryModal from './ItineraryModal';
 import GoogleTrendsWidget from './GoogleTrendsWidget';
 import Link from 'next/link';
 
 interface PlannerProps {
-  selectedCityName: string;
+  selectedCityName: string | null;
   onCitySelect: (cityName: string | null) => void;
   forecastData: Forecast[];
   userTier: 'platinum' | 'gold' | 'silver' | 'free';
@@ -24,7 +24,7 @@ interface PlannerProps {
 
 export default function Planner({ selectedCityName, onCitySelect, forecastData, userTier }: PlannerProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPricing, setIsLoadingPricing] = useState(false);
   const [pricingData, setPricingData] = useState<GenerateOptimalPricingOutput | null>(null);
   const [competitorData, setCompetitorData] = useState<CompetitorData | null>(null);
   const [isItineraryModalOpen, setIsItineraryModalOpen] = useState(false);
@@ -35,58 +35,49 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
 
   const selectedCity = useMemo(() => cities.find(c => c.name === selectedCityName), [selectedCityName]);
 
-  useEffect(() => {
-    const getPricing = async () => {
-      if (!selectedCity) return;
+  const getPricing = useCallback(async () => {
+    if (!selectedCity || !(userTier === 'gold' || userTier === 'platinum')) return;
       
-      const cityForecast = forecastData.find(f => f.city === selectedCity.name);
-      if (!cityForecast) {
-          if (forecastData.length > 0 && forecastData.length < cities.length){
-            setIsLoading(true);
-          } else {
-            setIsLoading(false);
-          }
-          return;
-      }
+    const cityForecast = forecastData.find(f => f.city === selectedCity.name);
+    if (!cityForecast) return;
 
-      setIsLoading(true);
-      setPricingData(null);
-      
-      const competitors = trackCompetitors(selectedCity);
-      setCompetitorData(competitors);
+    setIsLoadingPricing(true);
+    setPricingData(null);
+    
+    const competitors = trackCompetitors(selectedCity);
+    setCompetitorData(competitors);
 
-      const season = seasonalData[selectedMonth];
+    const season = seasonalData[selectedMonth];
 
-      try {
-        const result = await getOptimalPricingAction({
-          city: selectedCity.name,
-          state: selectedCity.state,
-          spikeProb: cityForecast.demandScore,
-          lgbtqIndex: selectedCity.lgbtqIndex,
-          month: season.name,
-          optimalDays: season.optimalDays,
-          multiplier: season.multiplier,
-          competitorCount: competitors.totalActive,
-          saturation: competitors.saturation,
-          avgRate: competitors.avgRate,
-        });
-        setPricingData(result);
-      } catch (error) {
-        console.error(error);
-        toast({
-          variant: "destructive",
-          title: "AI Pricing Error",
-          description: "Could not generate pricing recommendations. Please try again.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (userTier === 'gold' || userTier === 'platinum') {
-        getPricing();
+    try {
+      const result = await getOptimalPricingAction({
+        city: selectedCity.name,
+        state: selectedCity.state,
+        spikeProb: cityForecast.demandScore,
+        lgbtqIndex: selectedCity.lgbtqIndex,
+        month: season.name,
+        optimalDays: season.optimalDays,
+        multiplier: season.multiplier,
+        competitorCount: competitors.totalActive,
+        saturation: competitors.saturation,
+        avgRate: competitors.avgRate,
+      });
+      setPricingData(result);
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "AI Pricing Error",
+        description: "Could not generate pricing recommendations. Please try again.",
+      });
+    } finally {
+      setIsLoadingPricing(false);
     }
   }, [selectedCity, selectedMonth, forecastData, toast, userTier]);
+
+  useEffect(() => {
+    getPricing();
+  }, [getPricing]);
 
   const handleGenerateItinerary = async () => {
     if (!selectedCity || !pricingData) return;
@@ -165,7 +156,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                                 </>
                             ) : (
                                 <div className="flex items-center justify-center h-24">
-                                <p className="text-sm text-muted-foreground">Select a city to see competitor data.</p>
+                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
                                 </div>
                             )}
                         </CardContent>
@@ -177,14 +168,14 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                         </CardHeader>
                         <CardContent>
                         {!isGoldOrHigher ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center">
+                            <div className="flex flex-col items-center justify-center h-full text-center p-4">
                                 <p className="font-semibold">This is a Gold feature</p>
                                 <p className="text-sm text-muted-foreground mb-4">Upgrade to unlock AI-powered pricing.</p>
                                 <Link href="/subscribe"><Button size="sm">Upgrade Now</Button></Link>
                             </div>
                         ) : (
                             <>
-                            {isLoading ? (
+                            {isLoadingPricing ? (
                                 <div className="flex items-center justify-center h-40">
                                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
                                 </div>
@@ -208,7 +199,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center h-40">
-                                <p className="text-sm text-muted-foreground text-center">Pricing analysis will appear here. {forecastData.length > 0 && forecastData.length < cities.length ? 'Loading market data...' : 'Select a city and month.'}</p>
+                                <p className="text-sm text-muted-foreground text-center">Could not load pricing data.</p>
                                 </div>
                             )}
                             </>
@@ -217,7 +208,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                     </Card>
                 </div>
                 
-                {isGoldOrHigher && pricingData && !isLoading && (
+                {isGoldOrHigher && pricingData && !isLoadingPricing && (
                      <>
                         {isPlatinum ? (
                              <Button onClick={handleGenerateItinerary} className="w-full font-bold" size="lg" disabled={isItineraryLoading}>

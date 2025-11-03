@@ -8,32 +8,30 @@ import { cities } from "./data";
 import type { Forecast } from "./types";
 
 export async function predictAllDemandsAction(): Promise<Forecast[]> {
-  const forecasts: Forecast[] = [];
-  // Process cities one by one to avoid rate limiting
-  for (const city of cities) {
+  const forecasts: Forecast[] = await Promise.all(cities.map(async (city) => {
     try {
       const result = await predictMassageDemand({
         city: city.name,
         population: city.population,
         lgbtqIndex: city.lgbtqIndex,
       });
-      forecasts.push({
+      return {
         city: city.name,
         state: city.state,
         demandScore: result.demandScore,
         lgbtqIndex: city.lgbtqIndex,
-      });
+      };
     } catch (error) {
       console.error(`Failed to predict demand for ${city.name}:`, error);
-      // Fallback to a random score if AI fails
-      forecasts.push({
+      // Fallback to a random score if AI fails for a specific city
+      return {
         city: city.name,
         state: city.state,
         demandScore: Math.floor(Math.random() * 50) + 30, // Random score between 30-80
         lgbtqIndex: city.lgbtqIndex,
-      });
+      };
     }
-  }
+  }));
   return forecasts;
 }
 
