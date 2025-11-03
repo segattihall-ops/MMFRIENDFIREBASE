@@ -9,11 +9,12 @@ import type { Forecast, CompetitorData } from '@/lib/types';
 import { trackCompetitors } from '@/lib/utils';
 import { getOptimalPricingAction, generateItineraryAction } from '@/lib/actions';
 import type { GenerateOptimalPricingOutput } from '@/ai/flows/generate-optimal-pricing';
-import { BrainCircuit, Ticket, Users, Loader2, ArrowLeft, TrendingUp, Plane } from 'lucide-react';
+import { BrainCircuit, Ticket, Users, Loader2, ArrowLeft, TrendingUp, Plane, Calendar as CalendarIcon, Zap, Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ItineraryModal from './ItineraryModal';
 import GoogleTrendsWidget from './GoogleTrendsWidget';
 import Link from 'next/link';
+import { Calendar } from '@/components/ui/calendar';
 
 interface PlannerProps {
   selectedCityName: string | null;
@@ -23,7 +24,7 @@ interface PlannerProps {
 }
 
 export default function Planner({ selectedCityName, onCitySelect, forecastData, userTier }: PlannerProps) {
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isLoadingPricing, setIsLoadingPricing] = useState(false);
   const [pricingData, setPricingData] = useState<GenerateOptimalPricingOutput | null>(null);
   const [competitorData, setCompetitorData] = useState<CompetitorData | null>(null);
@@ -34,6 +35,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
   const { toast } = useToast();
 
   const selectedCity = useMemo(() => cities.find(c => c.name === selectedCityName), [selectedCityName]);
+  const selectedMonth = selectedDate ? selectedDate.getMonth() : new Date().getMonth();
 
   const getPricing = useCallback(async () => {
     if (!selectedCity || !(userTier === 'gold' || userTier === 'platinum')) return;
@@ -76,10 +78,10 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
   }, [selectedCity, selectedMonth, forecastData, toast, userTier]);
 
   useEffect(() => {
-    if (selectedCityName) {
+    if (selectedCityName && selectedDate) {
       getPricing();
     }
-  }, [selectedCityName, getPricing]);
+  }, [selectedCityName, selectedDate, getPricing]);
 
   const handleGenerateItinerary = async () => {
     if (!selectedCity || !pricingData) return;
@@ -127,6 +129,8 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
         </div>
     )
   }
+  
+  const currentMonthData = seasonalData[selectedMonth];
 
   return (
     <div className="space-y-6">
@@ -144,70 +148,117 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                 </div>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
-                 <div className="grid lg:grid-cols-2 gap-8">
-                    <Card>
+                 <div className="grid lg:grid-cols-3 gap-8">
+                    <Card className="lg:col-span-1">
                         <CardHeader>
-                            <CardTitle className="text-lg font-headline flex items-center gap-2"><Users className="w-5 h-5 text-primary"/>Competitor Intel</CardTitle>
+                            <CardTitle className="text-lg font-headline flex items-center gap-2"><CalendarIcon className="w-5 h-5 text-primary"/>Monthly Planner</CardTitle>
+                            <CardDescription>Select a month to see seasonal insights and pricing.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                            {competitorData ? (
-                                <>
-                                    <p><strong>Active Competitors:</strong> {competitorData.totalActive}</p>
-                                    <p><strong>Market Saturation:</strong> <span className={competitorData.saturation === 'High' ? 'text-destructive' : competitorData.saturation === 'Medium' ? 'text-yellow-500' : 'text-green-600'}>{competitorData.saturation}</span></p>
-                                    <p><strong>Average Market Rate:</strong> ~${competitorData.avgRate}/hr</p>
-                                </>
-                            ) : (
-                                <div className="flex items-center justify-center h-24">
-                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <CardContent>
+                             <Calendar
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={setSelectedDate}
+                                className="p-0"
+                                month={selectedDate}
+                                onMonthChange={(month) => setSelectedDate(month)}
+                              />
+                              {currentMonthData && (
+                                <div className="mt-4 space-y-3">
+                                  <div className="flex items-center gap-4 bg-primary/10 p-3 rounded-lg">
+                                    <Zap className="w-6 h-6 text-primary"/>
+                                    <div>
+                                      <p className="text-sm font-semibold">Seasonal Multiplier</p>
+                                      <p className="text-xs text-primary/80">Demand is typically <strong>{currentMonthData.multiplier}x</strong> normal.</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-4 bg-primary/10 p-3 rounded-lg">
+                                    <Briefcase className="w-6 h-6 text-primary"/>
+                                    <div>
+                                      <p className="text-sm font-semibold">Optimal Trip Length</p>
+                                      <p className="text-xs text-primary/80">Suggesting a <strong>{currentMonthData.optimalDays} day</strong> stay.</p>
+                                    </div>
+                                  </div>
                                 </div>
-                            )}
+                              )}
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg font-headline flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-primary"/>AI Pricing Guidance</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        {!isGoldOrHigher ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                                <p className="font-semibold">This is a Gold feature</p>
-                                <p className="text-sm text-muted-foreground mb-4">Upgrade to unlock AI-powered pricing.</p>
-                                <Link href="/subscribe"><Button size="sm">Upgrade Now</Button></Link>
-                            </div>
-                        ) : (
-                            <>
-                            {isLoadingPricing ? (
-                                <div className="flex items-center justify-center h-40">
-                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                                </div>
-                            ) : pricingData ? (
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="lg:col-span-2 space-y-8">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg font-headline flex items-center gap-2"><Users className="w-5 h-5 text-primary"/>Competitor Intel</CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-3 gap-4 text-center">
+                                {competitorData ? (
+                                    <>
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Suggested Rate</p>
-                                            <p className="text-3xl font-bold text-primary">${pricingData.suggestedRate}<span className="text-base font-normal">/hr</span></p>
+                                            <p className="text-sm text-muted-foreground">Active Competitors</p>
+                                            <p className="text-3xl font-bold">{competitorData.totalActive}</p>
                                         </div>
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Est. Bookings</p>
-                                            <p className="text-3xl font-bold text-primary">{pricingData.expectedBookings}</p>
+                                            <p className="text-sm text-muted-foreground">Market Saturation</p>
+                                            <p className={`text-3xl font-bold ${competitorData.saturation === 'High' ? 'text-destructive' : competitorData.saturation === 'Medium' ? 'text-yellow-500' : 'text-green-600'}`}>{competitorData.saturation}</p>
                                         </div>
+                                         <div>
+                                            <p className="text-sm text-muted-foreground">Avg. Market Rate</p>
+                                            <p className="text-3xl font-bold">${competitorData.avgRate}<span className="text-sm font-normal">/hr</span></p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="col-span-3 flex items-center justify-center h-24">
+                                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
                                     </div>
-                                    <div className="text-center bg-primary/10 rounded-lg p-3">
-                                        <p className="text-sm text-primary/80">Projected Revenue</p>
-                                        <p className="text-2xl font-bold text-primary">${pricingData.projectedRevenue.toLocaleString()}</p>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground italic p-2 bg-muted/50 rounded"><strong>Reasoning:</strong> {pricingData.reasoning}</p>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg font-headline flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-primary"/>AI Pricing Guidance</CardTitle>
+                                <CardDescription>For a trip in <strong>{currentMonthData?.name}</strong></CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                            {!isGoldOrHigher ? (
+                                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                                    <p className="font-semibold">This is a Gold feature</p>
+                                    <p className="text-sm text-muted-foreground mb-4">Upgrade to unlock AI-powered pricing.</p>
+                                    <Link href="/subscribe"><Button size="sm">Upgrade Now</Button></Link>
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-center h-40">
-                                <p className="text-sm text-muted-foreground text-center">Could not load pricing data. Please select a city.</p>
-                                </div>
+                                <>
+                                {isLoadingPricing ? (
+                                    <div className="flex items-center justify-center h-40">
+                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                    </div>
+                                ) : pricingData ? (
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4 text-center">
+                                            <div>
+                                                <p className="text-sm text-muted-foreground">Suggested Rate</p>
+                                                <p className="text-3xl font-bold text-primary">${pricingData.suggestedRate}<span className="text-base font-normal">/hr</span></p>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-muted-foreground">Est. Bookings</p>
+                                                <p className="text-3xl font-bold text-primary">{pricingData.expectedBookings}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-center bg-primary/10 rounded-lg p-3">
+                                            <p className="text-sm text-primary/80">Projected Revenue for {currentMonthData.name}</p>
+                                            <p className="text-2xl font-bold text-primary">${pricingData.projectedRevenue.toLocaleString()}</p>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground italic p-2 bg-muted/50 rounded"><strong>Reasoning:</strong> {pricingData.reasoning}</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center h-40">
+                                    <p className="text-sm text-muted-foreground text-center">Could not load pricing data. Please select a city.</p>
+                                    </div>
+                                )}
+                                </>
                             )}
-                            </>
-                        )}
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
                 
                 {isGoldOrHigher && pricingData && !isLoadingPricing && (
@@ -217,7 +268,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                                 {isItineraryLoading ? (
                                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
                                 ) : (
-                                    <><Ticket className="mr-2 h-4 w-4" /> Generate Trip Itinerary</>
+                                    <><Ticket className="mr-2 h-4 w-4" /> Generate AI Trip Itinerary for {currentMonthData?.name}</>
                                 )}
                             </Button>
                         ) : (
@@ -261,3 +312,5 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
     </div>
   );
 }
+
+    
