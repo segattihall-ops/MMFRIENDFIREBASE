@@ -1,6 +1,7 @@
 
 'use client';
 
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,8 @@ import type { ServiceListing, User } from "@/lib/types";
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from "../ui/skeleton";
-import { Star } from "lucide-react";
+import { Star, Instagram } from "lucide-react";
+import Link from 'next/link';
 
 interface ServiceListingCardProps {
     listing: ServiceListing;
@@ -34,18 +36,32 @@ export default function ServiceListingCard({ listing, onViewProfile }: ServiceLi
     const { data: provider, isLoading: isLoadingProvider } = useDoc<User>(providerDocRef);
 
     return (
-        <Card className="flex flex-col">
+        <Card className="flex flex-col overflow-hidden">
+            {listing.imageUrl ? (
+                <div className="relative aspect-video w-full">
+                    <Image
+                        src={listing.imageUrl}
+                        alt={serviceLabels[listing.serviceType]}
+                        fill
+                        className="object-cover"
+                    />
+                </div>
+            ) : (
+                <div className="aspect-video w-full bg-muted flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground">No image</p>
+                </div>
+            )}
             <CardHeader>
                 <div className="flex justify-between items-start gap-4">
                     <CardTitle className="font-headline text-xl">{serviceLabels[listing.serviceType]}</CardTitle>
-                    <Badge variant="secondary">${listing.rate}/hr</Badge>
+                    <Badge variant="secondary" className="text-base">${listing.rate}/hr</Badge>
                 </div>
                 <CardDescription>in {listing.location}</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-3">{listing.description}</p>
             </CardContent>
-            <CardFooter className="flex justify-between items-center bg-muted/50 p-4 rounded-b-lg">
+            <CardFooter className="flex justify-between items-center bg-muted/50 p-3 rounded-b-lg">
                 {isLoadingProvider ? (
                     <div className="flex items-center gap-2">
                         <Skeleton className="w-10 h-10 rounded-full" />
@@ -56,12 +72,12 @@ export default function ServiceListingCard({ listing, onViewProfile }: ServiceLi
                     </div>
                 ) : provider ? (
                     <div className="flex items-center gap-3">
-                         <Avatar className="w-10 h-10 border">
+                         <Avatar className="w-10 h-10 border cursor-pointer" onClick={() => onViewProfile(listing.providerId)}>
                             <AvatarImage src={`https://picsum.photos/seed/${provider.id}/40/40`} alt={provider.email} />
                             <AvatarFallback>{provider.email.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="font-semibold text-sm">{provider.email.split('@')[0]}</p>
+                            <p className="font-semibold text-sm cursor-pointer hover:underline" onClick={() => onViewProfile(listing.providerId)}>{provider.email.split('@')[0]}</p>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                                 <span>5.0 (12)</span>
@@ -69,10 +85,21 @@ export default function ServiceListingCard({ listing, onViewProfile }: ServiceLi
                         </div>
                     </div>
                 ): null}
-                 <Button variant="ghost" size="sm" onClick={() => onViewProfile(listing.providerId)}>
-                    View Profile
-                </Button>
+                <div className="flex items-center gap-1">
+                    {listing.instagramUrl && (
+                        <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                           <Link href={listing.instagramUrl} target="_blank" rel="noopener noreferrer">
+                                <Instagram className="w-4 h-4" />
+                           </Link>
+                        </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => onViewProfile(listing.providerId)}>
+                        Profile
+                    </Button>
+                </div>
             </CardFooter>
         </Card>
     );
 }
+
+    

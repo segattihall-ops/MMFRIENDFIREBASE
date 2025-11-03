@@ -281,11 +281,21 @@
         },
         "rate": {
           "type": "number",
-          "description": "The price of the service."
+          "description": "The base price of the service per hour."
         },
         "location": {
           "type": "string",
-          "description": "The city/area where the service is provided."
+          "description": "The specific city and state where the service is provided."
+        },
+        "instagramUrl": {
+          "type": "string",
+          "description": "A URL to the provider's Instagram profile.",
+          "format": "uri"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "A URL to a photo representing the service.",
+          "format": "uri"
         },
         "createdAt": {
           "type": "string",
@@ -452,4 +462,6 @@
     "reasoning": "The Firestore data structure is designed to support the MasseurFriend application's core features, including demand forecasting, competitor analysis, trip planning, and user authentication, while adhering to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are Not Filters).\n\n**Authorization Independence (Denormalization):**\n\n*   `TripPlan` documents include the `userId`. This denormalization is critical for authorization. Security rules can enforce that only the user with the matching `userId` can read, update, or delete the `TripPlan` without needing to `get()` data from the `/users/{userId}` document. This enables atomic operations and simplifies security rules.\n\n**Structural Segregation (Homogeneous Security Posture):**\n\n*   User-specific data (`TripPlan`, `Review`) is stored under `/users/{userId}`, ensuring that all documents within a user's subcollection have the same ownership-based security requirements.\n*   Global data (`City`, `Forecast`, `CompetitorData`, `SeasonalData`) is stored in root-level collections. These collections are designed for broader read access (e.g., any authenticated user can read city data) but write access is restricted (e.g., only admins can update city data).\n\n**Access Modeling:**\n\n*   **Path-Based Ownership:** The `/users/{userId}/trip_plans/{tripPlanId}` and `/users/{userId}/reviews/{reviewId}` paths establish clear ownership. Only the user identified by `{userId}` can manage trip plans within their dedicated subcollection.\n*   **Global Roles (DBAC):** The design anticipates a potential `/roles_admin/{uid}` collection (not explicitly defined in the path list but implied by the entities).  The existence of a document in this collection grants admin privileges.\n\n**QAPs (Rules are Not Filters):**\n\n*   The data structure supports secure list operations. For example, listing trip plans under `/users/{userId}/trip_plans` is secure because the rules can easily filter based on `request.auth.uid == userId` without needing to inspect each document's content.\n*   The segregation of user-owned data into `/users/{userId}` subcollections prevents mixing data with different access requirements within the same collection. Admin-controlled global data is separated from user-controlled data.\n\n**Invariants:**\n\n*   The structure facilitates enforcing invariants. For instance, security rules can ensure that the `userId` in a `TripPlan` document cannot be changed after creation, preserving ownership integrity.\n*   Timestamps (if added to the entities) can be similarly protected to ensure they are set only on creation and not modified afterward."
   }
 }
+    
+
     

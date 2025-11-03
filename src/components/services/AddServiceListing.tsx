@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Instagram } from 'lucide-react';
 import { addServiceListingAction } from '@/lib/actions';
 
 const serviceListingSchema = z.object({
@@ -27,6 +27,8 @@ const serviceListingSchema = z.object({
   description: z.string().min(20, 'Description must be at least 20 characters long.').max(500),
   rate: z.coerce.number().min(1, 'Rate must be a positive number.'),
   location: z.string().min(3, 'Location is required.'),
+  instagramUrl: z.string().url('Please enter a valid URL.').optional().or(z.literal('')),
+  imageUrl: z.string().url('Please enter a valid image URL.').optional().or(z.literal('')),
 });
 
 type ServiceListingFormValues = z.infer<typeof serviceListingSchema>;
@@ -54,6 +56,8 @@ export default function AddServiceListing({ isOpen, onOpenChange, providerId }: 
     defaultValues: {
       description: '',
       location: '',
+      instagramUrl: '',
+      imageUrl: '',
     },
   });
 
@@ -88,7 +92,7 @@ export default function AddServiceListing({ isOpen, onOpenChange, providerId }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-headline text-2xl">Add a Service</DialogTitle>
           <DialogDescription>
@@ -127,10 +131,23 @@ export default function AddServiceListing({ isOpen, onOpenChange, providerId }: 
                             <FormLabel>Description</FormLabel>
                             <FormControl>
                                <Textarea
-                                    placeholder="Tell everyone about your service..."
+                                    placeholder="Tell everyone about your service, your experience, and what makes you stand out..."
                                     className="min-h-[100px]"
                                     {...field}
                                 />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Image URL</FormLabel>
+                            <FormControl>
+                               <Input placeholder="https://example.com/your-service-photo.jpg" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -157,13 +174,29 @@ export default function AddServiceListing({ isOpen, onOpenChange, providerId }: 
                             <FormItem>
                                 <FormLabel>Location</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="e.g., Dallas, TX" {...field} />
+                                    <Input placeholder="e.g., West Hollywood, CA" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
                  </div>
+                 <FormField
+                    control={form.control}
+                    name="instagramUrl"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Instagram Profile (Optional)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input className="pl-9" placeholder="https://instagram.com/your-username" {...field} />
+                                </div>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <DialogFooter className="pt-4">
                     <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isLoading}>
                         Cancel
@@ -179,3 +212,5 @@ export default function AddServiceListing({ isOpen, onOpenChange, providerId }: 
     </Dialog>
   );
 }
+
+    

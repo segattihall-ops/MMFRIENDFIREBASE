@@ -55,6 +55,10 @@ export type ServiceListing = {
   serviceType: 'barber' | 'hair-stylist' | 'manicure-pedicure' | 'fitness-training' | 'meal-prep';
   description: string;
   rate: number;
-  location: string; // For simplicity, a string. Could be GeoPoint later.
+  location: string;
+  instagramUrl?: string;
+  imageUrl?: string;
   createdAt: any;
 }
+
+    
