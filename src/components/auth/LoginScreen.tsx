@@ -1,10 +1,12 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Sun, Moon } from 'lucide-react';
 
 const AppLogo = () => (
@@ -31,9 +33,23 @@ interface LoginScreenProps {
 export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
+
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSignIn = () => {
     if (email && password) {
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
       onLogin(email, password);
     }
   };
@@ -70,6 +86,14 @@ export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScr
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
             />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+                id="remember" 
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+            />
+            <Label htmlFor="remember" className="text-sm font-normal">Remember me</Label>
           </div>
            <CardDescription className="text-xs text-center pt-2">
             <strong>Demo:</strong> use `admin@masseurfriend.com` and `admin123` or any other credentials.
