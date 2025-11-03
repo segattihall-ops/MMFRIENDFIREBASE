@@ -65,9 +65,8 @@ export default function MasseurProApp() {
         setIsLoadingForecast(true);
         setForecastData([]);
         try {
-          await predictAllDemandsAction((newForecast) => {
-            setForecastData(prevData => [...prevData, newForecast]);
-          });
+          const forecasts = await predictAllDemandsAction();
+          setForecastData(forecasts);
         } catch (error) {
             console.error(error);
             toast({
