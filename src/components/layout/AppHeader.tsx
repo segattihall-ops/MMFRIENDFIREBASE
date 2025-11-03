@@ -43,7 +43,10 @@ export default function AppHeader({ user, onLogout, darkMode, setDarkMode }: App
           <div className="flex items-center gap-2">
              <Link href="/" className="flex items-center gap-2">
               <AppLogo />
-              <h1 className="text-xl font-bold text-foreground hidden sm:block">MasseurPro</h1>
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold text-foreground">MasseurPro</h1>
+                <p className="text-xs text-muted-foreground -mt-1">by XRankFlow</p>
+              </div>
             </Link>
           </div>
           

@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'MasseurPro',
+  title: 'MasseurPro by XRankFlow MG',
   description: 'AI-powered market intelligence for professional masseurs.',
 };
 

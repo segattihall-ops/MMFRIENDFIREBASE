@@ -27,16 +27,6 @@ export default function MasseurProApp() {
   const { toast } = useToast();
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--primary-foreground', 'hsl(355.7 100% 97.3%)');
-    document.documentElement.style.setProperty('--primary', 'hsl(346.8 77.2% 49.8%)');
-    document.documentElement.style.setProperty('--background', darkMode ? 'hsl(224 71.4% 4.1%)' : 'hsl(0 0% 100%)');
-    document.documentElement.style.setProperty('--foreground', darkMode ? 'hsl(210 20% 98%)' : 'hsl(224 71.4% 4.1%)');
-    document.documentElement.style.setProperty('--muted', darkMode ? 'hsl(215 27.9% 16.9%)' : 'hsl(220 14.3% 95.9%)');
-    document.documentElement.style.setProperty('--muted-foreground', darkMode ? 'hsl(217.9 10.6% 64.9%)' : 'hsl(220 8.9% 46.1%)');
-    document.documentElement.style.setProperty('--accent', darkMode ? 'hsl(215 27.9% 16.9%)' : 'hsl(220 14.3% 95.9%)');
-    document.documentElement.style.setProperty('--accent-foreground', darkMode ? 'hsl(210 20% 98%)' : 'hsl(220.9 39.3% 11%)');
-    document.documentElement.style.setProperty('--border', darkMode ? 'hsl(215 27.9% 16.9%)' : 'hsl(220 13% 91%)');
-
     const root = window.document.documentElement;
     if (darkMode) {
       root.classList.add('dark');
@@ -180,9 +170,9 @@ export default function MasseurProApp() {
             <div className="flex justify-center gap-4 mb-4">
                 <a href="#" className="hover:text-primary">Terms of Service</a>
                 <a href="#" className="hover:text-primary">Privacy Policy</a>
-                <a href="#" className="hover:text-primary">Help Center</a>
+                <a href="mailto:masseurpro@xrankflow.com" className="hover:text-primary">Help Center</a>
             </div>
-            <p>&copy; {new Date().getFullYear()} MasseurPro. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} XRankFlow MG. All rights reserved.</p>
             <p className="mt-2 text-xs">Disclaimer: All data is for informational purposes only and does not guarantee income or safety. Use your professional judgment.</p>
         </div>
       </footer>

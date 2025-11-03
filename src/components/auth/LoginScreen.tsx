@@ -44,7 +44,7 @@ export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScr
                 <AppLogo />
             </div>
           <CardTitle className="text-3xl font-bold font-headline">Welcome to MasseurPro</CardTitle>
-          <CardDescription>Your AI market intelligence platform.</CardDescription>
+          <CardDescription>AI market intelligence by XRankFlow MG.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
