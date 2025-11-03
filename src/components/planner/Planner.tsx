@@ -118,23 +118,42 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
 
   const isPlatinum = userTier === 'platinum';
 
+  if (!selectedCity) {
+    return (
+        <div className="flex flex-col items-center justify-center text-center h-full min-h-[50vh]">
+            <div className="p-8 rounded-lg bg-muted/50">
+                <Plane className="w-16 h-16 text-primary mx-auto mb-4" />
+                <h2 className="text-2xl font-bold font-headline">Select a City</h2>
+                <p className="text-muted-foreground mt-2">Choose a destination from the Dashboard to start planning your trip.</p>
+                <Button onClick={() => onCitySelect(null)} className="mt-6">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Dashboard
+                </Button>
+            </div>
+        </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-        <Button variant="ghost" onClick={() => onCitySelect(null)} className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Heatmap
-        </Button>
-
         <Card className="overflow-hidden">
-            <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b">
-                <CardTitle className="font-headline text-3xl text-gray-800 dark:text-white">Trip Planner: {selectedCityName}</CardTitle>
-                <CardDescription>AI-powered insights for your trip to {selectedCityName}.</CardDescription>
+            <CardHeader className="bg-muted/30 border-b">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="font-headline text-3xl">Trip Planner: {selectedCityName}</CardTitle>
+                        <CardDescription>AI-powered insights for your trip to {selectedCityName}.</CardDescription>
+                    </div>
+                     <Button variant="ghost" onClick={() => onCitySelect(null)}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Dashboard
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
                  <div className="grid lg:grid-cols-2 gap-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg font-headline flex items-center gap-2 text-gray-700 dark:text-gray-200"><Users className="w-5 h-5 text-primary"/>Competitor Intel</CardTitle>
+                            <CardTitle className="text-lg font-headline flex items-center gap-2"><Users className="w-5 h-5 text-primary"/>Competitor Intel</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
                             {competitorData ? (
@@ -153,7 +172,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg font-headline flex items-center gap-2 text-gray-700 dark:text-gray-200"><BrainCircuit className="w-5 h-5 text-primary"/>AI Pricing Guidance</CardTitle>
+                            <CardTitle className="text-lg font-headline flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-primary"/>AI Pricing Guidance</CardTitle>
                         </CardHeader>
                         <CardContent>
                         {(userTier === 'free' || userTier === 'silver') && (
@@ -181,11 +200,11 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                                             <p className="text-3xl font-bold text-primary">{pricingData.expectedBookings}</p>
                                         </div>
                                     </div>
-                                    <div className="text-center bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
-                                        <p className="text-sm text-green-700 dark:text-green-300">Projected Revenue</p>
-                                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">${pricingData.projectedRevenue.toLocaleString()}</p>
+                                    <div className="text-center bg-primary/10 rounded-lg p-3">
+                                        <p className="text-sm text-primary/80">Projected Revenue</p>
+                                        <p className="text-2xl font-bold text-primary">${pricingData.projectedRevenue.toLocaleString()}</p>
                                     </div>
-                                    <p className="text-xs text-muted-foreground italic p-2 bg-gray-50 dark:bg-gray-800/50 rounded"><strong>Reasoning:</strong> {pricingData.reasoning}</p>
+                                    <p className="text-xs text-muted-foreground italic p-2 bg-muted/50 rounded"><strong>Reasoning:</strong> {pricingData.reasoning}</p>
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center h-40">
@@ -208,7 +227,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                     </Button>
                 )}
                  {userTier !== 'platinum' && pricingData && !isLoading && (
-                     <Card className="text-center p-6 bg-gray-50 dark:bg-gray-800/50">
+                     <Card className="text-center p-6 bg-muted/30">
                         <CardTitle className="font-headline text-lg">AI Itinerary is a Platinum Feature</CardTitle>
                         <CardDescription className="mb-4 mt-1">Upgrade to get a fully-planned trip schedule!</CardDescription>
                         <Link href="/subscribe">
@@ -220,7 +239,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                 {isPlatinum && selectedCity && (
                      <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg font-headline flex items-center gap-2 text-gray-700 dark:text-gray-200"><TrendingUp className="w-5 h-5 text-primary"/>Real-Time Demand Trends</CardTitle>
+                            <CardTitle className="text-lg font-headline flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary"/>Real-Time Demand Trends</CardTitle>
                              <CardDescription>90-day search interest for "massage therapy" in {selectedCity.state}.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -244,5 +263,3 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
     </div>
   );
 }
-
-    

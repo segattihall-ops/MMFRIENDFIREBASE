@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Flame } from 'lucide-react';
 
 interface HeatmapProps {
   forecastData: Forecast[];
@@ -14,14 +15,14 @@ interface HeatmapProps {
 }
 
 const getBorderColor = (score: number) => {
-    if (score >= 70) return 'border-primary/80 hover:bg-primary/10 shadow-primary/20';
-    if (score >= 50) return 'border-yellow-400 hover:bg-yellow-400/10 shadow-yellow-400/20';
+    if (score >= 70) return 'border-primary/80 hover:bg-primary/5 shadow-primary/20';
+    if (score >= 50) return 'border-orange-400/80 hover:bg-orange-400/5 shadow-orange-400/20';
     return 'border-border hover:bg-accent';
 };
 
 const getDemandText = (score: number) => {
     if (score >= 70) return { text: 'High Demand', color: 'text-primary/90'};
-    if (score >= 50) return { text: 'Medium Demand', color: 'text-yellow-500'};
+    if (score >= 50) return { text: 'Medium Demand', color: 'text-orange-500'};
     return { text: 'Low Demand', color: 'text-muted-foreground' };
 }
 
@@ -36,7 +37,7 @@ export default function Heatmap({ forecastData, isLoading, onCitySelect, userTie
       </div>
       
       {userTier === 'free' && (
-        <Card className="bg-accent/50 dark:bg-accent/20 border-primary/50 text-center p-6">
+        <Card className="bg-muted/30 text-center p-6">
           <CardTitle className="font-headline text-xl">Unlock Your Full Potential</CardTitle>
           <CardDescription className="mb-4 mt-1">You are on the Free plan. Upgrade to unlock the Trip Planner and more.</CardDescription>
           <Link href="/subscribe">
@@ -45,7 +46,7 @@ export default function Heatmap({ forecastData, isLoading, onCitySelect, userTie
         </Card>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {isLoading ? (
           Array.from({ length: 15 }).map((_, i) => (
             <Card key={i}>
@@ -71,8 +72,8 @@ export default function Heatmap({ forecastData, isLoading, onCitySelect, userTie
                 <CardDescription>{forecast.state}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-muted-foreground">Demand Spike</p>
-                <p className="text-3xl font-bold">{forecast.demandScore}%</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Flame className="w-3 h-3" />Demand Score</p>
+                <p className="text-3xl font-bold">{forecast.demandScore}</p>
                 <p className={`text-xs font-semibold ${getDemandText(forecast.demandScore).color}`}>{getDemandText(forecast.demandScore).text}</p>
               </CardContent>
             </Card>

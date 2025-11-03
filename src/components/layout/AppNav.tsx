@@ -44,7 +44,7 @@ export default function AppNav({ activeTab, setActiveTab, user }: AppNavProps) {
                   'flex shrink-0 items-center gap-2 px-3 sm:px-4 py-3 border-b-2 font-medium text-sm transition-colors',
                   activeTab === tab.id
                     ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300 dark:hover:border-gray-700',
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
                   isDisabled && 'opacity-50 cursor-not-allowed'
                 )}
                 aria-current={activeTab === tab.id ? 'page' : undefined}

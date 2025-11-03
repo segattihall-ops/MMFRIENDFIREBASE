@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sun, Moon, LogOut, Gem, User as UserIcon } from "lucide-react";
+import { Sun, Moon, LogOut, Gem, User as UserIcon, Menu } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -40,23 +40,25 @@ export default function AppHeader({ user, onLogout, darkMode, setDarkMode }: App
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <AppLogo />
-            <h1 className="text-xl font-bold text-foreground hidden sm:block">MasseurPro</h1>
-          </Link>
+          <div className="flex items-center gap-2">
+             <Link href="/" className="flex items-center gap-2">
+              <AppLogo />
+              <h1 className="text-xl font-bold text-foreground hidden sm:block">MasseurPro</h1>
+            </Link>
+          </div>
           
           <div className="flex items-center gap-2">
              <Link href="/subscribe" className="hidden sm:block">
-              <Button variant="ghost" size="sm" className="font-semibold">
-                Platinum Plans
+              <Button variant="outline" size="sm" className="font-semibold">
+                View Plans
               </Button>
             </Link>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex gap-2 items-center rounded-full px-3 py-1.5 h-auto">
-                    <UserIcon className="w-5 h-5 text-muted-foreground" />
-                    <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center">
+                 <Button variant="outline" className="flex gap-2 items-center rounded-full pl-1 pr-3 py-1 h-auto">
+                    <Menu className="w-5 h-5 text-muted-foreground" />
+                    <div className="w-7 h-7 bg-muted rounded-full flex items-center justify-center">
                         <UserIcon className="w-4 h-4 text-foreground"/>
                     </div>
                 </Button>
