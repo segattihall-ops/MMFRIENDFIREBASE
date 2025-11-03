@@ -14,7 +14,7 @@
  *
  * Key Security Decisions:
  * - Users can only access their own user documents and trip plans.
- * - Listing all users is disallowed.
+ * - Listing all users is disallowed for non-admins.
  * - City, Forecast, CompetitorData, and SeasonalData documents are publicly readable but only writable by admins.
  * - The rules do NOT validate the full data schema (data types, required fields) for rapid prototyping.
  *
@@ -24,6 +24,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'admin@masseurfriend.com';
+    }
 
     /**
      * @description Enforces user-ownership for user profiles.
@@ -43,11 +47,11 @@ service cloud.firestore {
         return (isOwner(userId) && resource != null);
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false; // Listing all users is not permitted.
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin(); // Listing all users is permitted for admins.
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id; //Enforce immutable userId
-      allow delete: if isExistingOwner(userId);
+      allow update: if (isExistingOwner(userId) || isAdmin()) && request.resource.data.id == resource.data.id; //Enforce immutable userId
+      allow delete: if isExistingOwner(userId) || isAdmin();
     }
 
     /**
@@ -68,11 +72,11 @@ service cloud.firestore {
         return (isOwner(userId) && resource != null);
       }
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId; // Enforce immutable userId.
-      allow delete: if isExistingOwner(userId);
+      allow update: if (isExistingOwner(userId) || isAdmin()) && request.resource.data.userId == resource.data.userId; // Enforce immutable userId.
+      allow delete: if isExistingOwner(userId) || isAdmin();
     }
 
     /**
@@ -84,11 +88,6 @@ service cloud.firestore {
      * @principle Implements role-based access control for city data.
      */
     match /cities/{cityId} {
-      // TODO: Implement admin role check
-      function isAdmin() {
-        return false;
-      }
-
       allow get, list: if request.auth != null;
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
@@ -104,11 +103,6 @@ service cloud.firestore {
      * @principle Implements role-based access control for forecast data.
      */
     match /cities/{cityId}/forecasts/{forecastId} {
-      // TODO: Implement admin role check
-      function isAdmin() {
-        return false;
-      }
-
       allow get, list: if request.auth != null;
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
@@ -124,11 +118,6 @@ service cloud.firestore {
      * @principle Implements role-based access control for competitor data.
      */
     match /cities/{cityId}/competitor_data/{competitorDataId} {
-      // TODO: Implement admin role check
-      function isAdmin() {
-        return false;
-      }
-
       allow get, list: if request.auth != null;
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
@@ -144,11 +133,6 @@ service cloud.firestore {
      * @principle Implements role-based access control for seasonal data.
      */
     match /seasonal_data/{seasonalDataId} {
-      // TODO: Implement admin role check
-      function isAdmin() {
-        return false;
-      }
-
       allow get, list: if request.auth != null;
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;

@@ -5,21 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Users, DollarSign, CreditCard, Activity, CheckCircle, XCircle } from "lucide-react";
-import type { User } from '@/lib/types';
-
-
-const mockUsers: User[] = [
-    { id: 'user1', email: 'john.doe@example.com', tier: 'gold', status: 'active', revenue: 490 },
-    { id: 'user2', email: 'jane.smith@example.com', tier: 'platinum', status: 'active', revenue: 990 },
-    { id: 'user3', email: 'sam.wilson@example.com', tier: 'gold', status: 'canceled', revenue: 245 },
-    { id: 'user4', email: 'lisa.white@example.com', tier: 'platinum', status: 'active', revenue: 1980 },
-    { id: 'user5', email: 'mark.brown@example.com', tier: 'gold', status: 'active', revenue: 490 },
-];
+import type { User as AppUser } from '@/lib/types';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
+import { Skeleton } from '../ui/skeleton';
 
 const AdminDashboard = () => {
-    const totalUsers = mockUsers.length;
-    const activeSubscriptions = mockUsers.filter(u => u.status === 'active').length;
-    const totalRevenue = mockUsers.reduce((acc, user) => acc + user.revenue, 0);
+    const firestore = useFirestore();
+
+    const usersQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'users'));
+    }, [firestore]);
+
+    const { data: users, isLoading: isLoadingUsers } = useCollection<AppUser>(usersQuery);
+
+    const totalUsers = users?.length || 0;
+    const activeSubscriptions = users?.filter(u => u.status === 'active').length || 0;
+    const totalRevenue = users?.reduce((acc, user) => acc + (user.revenue || 0), 0) || 0;
 
     // Mock API status
     const apiStatus = {
@@ -95,18 +98,29 @@ const AdminDashboard = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mockUsers.map((user) => (
+                                {isLoadingUsers ? (
+                                    Array.from({ length: 5 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[70px]" /></TableCell>
+                                        <TableCell className="text-right"><Skeleton className="h-4 w-[50px] ml-auto" /></TableCell>
+                                    </TableRow>
+                                    ))
+                                ) : (
+                                    users?.map((user) => (
                                     <TableRow key={user.id}>
                                         <TableCell className="font-medium">{user.email}</TableCell>
                                         <TableCell>
-                                            <Badge variant={user.tier === 'platinum' ? 'default' : 'secondary'} className="capitalize">{user.tier}</Badge>
+                                            <Badge variant={user.tier === 'platinum' ? 'default' : 'secondary'} className="capitalize">{user.tier || 'free'}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={user.status === 'active' ? 'outline' : 'destructive'} className="capitalize border-current">{user.status}</Badge>
+                                            <Badge variant={user.status === 'active' ? 'outline' : 'destructive'} className="capitalize border-current">{user.status || 'inactive'}</Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">${user.revenue.toLocaleString()}</TableCell>
+                                        <TableCell className="text-right">${(user.revenue || 0).toLocaleString()}</TableCell>
                                     </TableRow>
-                                ))}
+                                ))
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>
