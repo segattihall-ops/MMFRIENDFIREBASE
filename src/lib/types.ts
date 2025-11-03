@@ -1,3 +1,4 @@
+
 export type City = {
   name: string;
   state: string;
@@ -45,4 +46,14 @@ export type Review = {
     rating: number;
     comment: string;
     createdAt: string; // ISO date string
+}
+
+export type ServiceListing = {
+  id: string;
+  providerId: string;
+  serviceType: 'barber' | 'hair-stylist' | 'manicure-pedicure' | 'fitness-training' | 'meal-prep';
+  description: string;
+  rate: number;
+  location: string; // For simplicity, a string. Could be GeoPoint later.
+  createdAt: string;
 }

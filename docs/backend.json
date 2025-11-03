@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -255,6 +256,44 @@
         }
       },
       "required": ["id", "reviewerId", "revieweeId", "rating", "comment", "createdAt"]
+    },
+    "ServiceListing": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ServiceListing",
+      "type": "object",
+      "description": "Represents a service listing in the marketplace.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ServiceListing."
+        },
+        "providerId": {
+          "type": "string",
+          "description": "The UID of the user providing the service."
+        },
+        "serviceType": {
+          "type": "string",
+          "enum": ["barber", "hair-stylist", "manicure-pedicure", "fitness-training", "meal-prep"]
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the service offered."
+        },
+        "rate": {
+          "type": "number",
+          "description": "The price of the service."
+        },
+        "location": {
+          "type": "string",
+          "description": "The city/area where the service is provided."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the listing was created."
+        }
+      },
+      "required": ["id", "providerId", "serviceType", "description", "rate", "location", "createdAt"]
     }
   },
   "auth": {
@@ -389,6 +428,22 @@
             {
               "name": "seasonalDataId",
               "description": "The unique identifier for the seasonal data."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/service_listings/{listingId}",
+        "definition": {
+          "entityName": "ServiceListing",
+          "schema": {
+            "$ref": "#/backend/entities/ServiceListing"
+          },
+          "description": "Stores service listings for the marketplace. Read is public, write is restricted to the provider.",
+          "params": [
+            {
+              "name": "listingId",
+              "description": "The unique identifier for the service listing."
             }
           ]
         }
