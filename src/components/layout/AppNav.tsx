@@ -37,9 +37,9 @@ export default function AppNav({ activeTab, setActiveTab, user }: AppNavProps) {
           const isSilverOrHigher = user.tier === 'silver' || isGoldOrHigher;
 
           const isDisabled = 
-            (tab.id === 'planner' && !isGoldOrHigher) ||
+            (tab.id === 'planner' && userTier === 'free') ||
             (tab.id === 'road-trip' && !isPlatinum) ||
-            (tab.id === 'safety' && !isSilverOrHigher) ||
+            (tab.id === 'safety' && userTier === 'free') ||
             (tab.id === 'revenue' && !isPlatinum) ||
             (tab.id === 'clients' && !isPlatinum) ||
             (tab.id === 'community' && !isPlatinum);

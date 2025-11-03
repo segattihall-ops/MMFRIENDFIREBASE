@@ -46,5 +46,3 @@ export type Review = {
     comment: string;
     createdAt: string; // ISO date string
 }
-
-    
