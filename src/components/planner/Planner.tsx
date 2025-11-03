@@ -241,6 +241,7 @@ export default function Planner({ selectedCityName, onCitySelect, forecastData, 
                         </CardHeader>
                         <CardContent>
                             <GoogleTrendsWidget
+                                key={selectedCity.state}
                                 keyword="massage therapy"
                                 geo={selectedCity.state}
                             />
