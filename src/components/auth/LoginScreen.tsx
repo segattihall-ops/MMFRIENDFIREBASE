@@ -36,8 +36,8 @@ interface LoginScreenProps {
 export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps) {
   const auth = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('test@masseurfriend.com');
+  const [password, setPassword] = useState('password');
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [actionInProgress, setActionInProgress] = useState(false);
