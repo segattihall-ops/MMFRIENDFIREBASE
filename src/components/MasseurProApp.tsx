@@ -96,7 +96,7 @@ export default function MasseurProApp() {
             if (!isCancelled) {
                 setForecastData(forecasts);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
             if (!isCancelled) {
                 const fallbackForecasts = cities.map(city => ({
@@ -106,10 +106,16 @@ export default function MasseurProApp() {
                     lgbtqIndex: city.lgbtqIndex,
                 }));
                 setForecastData(fallbackForecasts);
+                
+                let description = "Could not fetch live market demand. Displaying cached data.";
+                if (error.message && error.message.includes('429')) {
+                    description = "AI service is busy. Displaying cached demand data to avoid rate limits."
+                }
+
                 toast({
                     variant: "destructive",
                     title: "AI Service Unstable",
-                    description: "Could not fetch live market demand. Displaying cached data.",
+                    description: description,
                 });
             }
         } finally {
