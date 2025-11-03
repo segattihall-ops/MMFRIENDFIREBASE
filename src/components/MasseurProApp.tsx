@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { ActiveTab, User, Forecast } from '@/lib/types';
+import type { ActiveTab, Forecast } from '@/lib/types';
 import { predictAllDemandsAction } from '@/lib/actions';
 import LoginScreen from './auth/LoginScreen';
 import AppHeader from './layout/AppHeader';
@@ -15,10 +15,14 @@ import CommunityForum from './community/CommunityForum';
 import SafetyReport from './safety/SafetyReport';
 import AdminDashboard from './admin/AdminDashboard';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase/auth/use-user';
+import { signOut, Auth } from 'firebase/auth';
+import { useAuth } from '@/firebase';
 
 export default function MasseurProApp() {
-  const [showLogin, setShowLogin] = useState(true);
-  const [user, setUser] = useState<{ name: string; tier: 'platinum' | 'gold' | 'silver' | 'free', isAdmin: boolean } | null>(null);
+  const { user, isLoading: isUserLoading } = useUser();
+  const auth = useAuth();
+  
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   
@@ -27,6 +31,8 @@ export default function MasseurProApp() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   
   const { toast } = useToast();
+
+  const appUser = user ? { name: user.email?.split('@')[0] || 'User', tier: 'platinum' as const, isAdmin: user.email === 'admin@masseurfriend.com' } : null;
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -37,30 +43,24 @@ export default function MasseurProApp() {
     }
   }, [darkMode]);
 
-  const handleLogin = (email: string) => {
-    let loggedInUser;
-    if (email.toLowerCase() === 'admin@masseurfriend.com') {
-      loggedInUser = { name: 'Admin', tier: 'platinum' as const, isAdmin: true };
-      setActiveTab('admin');
-    } else {
-      const tiers: ('free' | 'silver' | 'gold' | 'platinum')[] = ['free', 'silver', 'gold', 'platinum'];
-      const randomTier = tiers[Math.floor(Math.random() * tiers.length)];
-      loggedInUser = { name: 'Demo User', tier: randomTier, isAdmin: false };
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      // useUser hook will update the user state automatically
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
       setActiveTab('dashboard');
+      setSelectedCity(null);
+    } catch (error) {
+      console.error("Logout Error:", error);
+      toast({
+        variant: "destructive",
+        title: "Logout Failed",
+        description: "An error occurred while logging out. Please try again.",
+      });
     }
-    setUser(loggedInUser);
-    setShowLogin(false);
-    toast({
-        title: "Login Successful",
-        description: `Welcome back, ${loggedInUser.name}! You are on the ${loggedInUser.tier} plan.`,
-    });
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setShowLogin(true);
-    setSelectedCity(null);
-    setActiveTab('dashboard');
   };
   
   const handleCitySelect = useCallback((cityName: string | null) => {
@@ -81,7 +81,7 @@ export default function MasseurProApp() {
   }
 
   useEffect(() => {
-    if (showLogin) return;
+    if (!user) return;
     
     let isCancelled = false;
 
@@ -114,10 +114,10 @@ export default function MasseurProApp() {
     return () => {
         isCancelled = true;
     };
-  }, [showLogin, toast]);
+  }, [user, toast]);
 
   const renderContent = () => {
-    const userTier = user?.tier || 'free';
+    const userTier = appUser?.tier || 'free';
     
     if (activeTab === 'planner') {
        return <Planner 
@@ -145,7 +145,7 @@ export default function MasseurProApp() {
         case 'safety':
             return <SafetyReport userTier={userTier} />;
         case 'admin':
-            return user?.isAdmin ? <AdminDashboard /> : <p>Access Denied</p>;
+            return appUser?.isAdmin ? <AdminDashboard /> : <p>Access Denied</p>;
         default:
              return <Heatmap 
                 forecastData={forecastData} 
@@ -156,16 +156,24 @@ export default function MasseurProApp() {
     }
   }
 
-  if (showLogin) {
-    return <LoginScreen onLogin={handleLogin} darkMode={darkMode} setDarkMode={setDarkMode} />;
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginScreen darkMode={darkMode} setDarkMode={setDarkMode} />;
   }
   
-  if (!user) return null;
+  if (!appUser) return null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AppHeader user={user} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} />
-      <AppNav activeTab={activeTab} setActiveTab={handleTabSelect} user={user} />
+      <AppHeader user={appUser} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} />
+      <AppNav activeTab={activeTab} setActiveTab={handleTabSelect} user={appUser} />
 
       <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {renderContent()}

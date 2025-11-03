@@ -7,7 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Loader2 } from 'lucide-react';
+import { useAuth } from '@/firebase';
+import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
+import { useToast } from '@/hooks/use-toast';
+import { AuthError, onAuthStateChanged } from 'firebase/auth';
 
 const AppLogo = () => (
     <svg 
@@ -25,15 +29,17 @@ const AppLogo = () => (
 
 
 interface LoginScreenProps {
-  onLogin: (email: string, pass: string) => void;
   darkMode: boolean;
   setDarkMode: (dark: boolean) => void;
 }
 
-export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScreenProps) {
+export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps) {
+  const auth = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
@@ -43,14 +49,50 @@ export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScr
     }
   }, []);
 
-  const handleSignIn = () => {
-    if (email && password) {
-      if (rememberMe) {
+  useEffect(() => {
+    setIsLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+        setIsLoading(false);
+        if (user) {
+            toast({
+                title: "Login Successful",
+                description: `Welcome back, ${user.email}!`,
+            });
+        }
+    }, (error: AuthError) => {
+        setIsLoading(false);
+        toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: error.message,
+        });
+    });
+
+    return () => unsubscribe();
+  }, [auth, toast]);
+
+  const handleAuthAction = (action: 'signIn' | 'signUp') => {
+    if (!email || !password) {
+        toast({
+            variant: "destructive",
+            title: "Missing fields",
+            description: "Please enter both email and password.",
+        });
+      return;
+    }
+
+    if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
-      } else {
+    } else {
         localStorage.removeItem('rememberedEmail');
-      }
-      onLogin(email, password);
+    }
+    
+    setIsLoading(true);
+
+    if (action === 'signIn') {
+        initiateEmailSignIn(auth, email, password);
+    } else {
+        initiateEmailSignUp(auth, email, password);
     }
   };
 
@@ -73,7 +115,7 @@ export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScr
               placeholder="admin@masseurfriend.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
+              onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signIn')}
             />
           </div>
           <div className="space-y-2">
@@ -81,10 +123,10 @@ export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScr
             <Input
               id="password"
               type="password"
-              placeholder="admin123"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
+              onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signIn')}
             />
           </div>
           <div className="flex items-center space-x-2">
@@ -95,13 +137,15 @@ export default function LoginScreen({ onLogin, darkMode, setDarkMode }: LoginScr
             />
             <Label htmlFor="remember" className="text-sm font-normal">Remember me</Label>
           </div>
-           <CardDescription className="text-xs text-center pt-2">
-            <strong>Demo:</strong> use `admin@masseurfriend.com` and `admin123` or any other credentials.
-          </CardDescription>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button onClick={handleSignIn} className="w-full font-bold" size="lg">
+           <Button onClick={() => handleAuthAction('signIn')} className="w-full font-bold" size="lg" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
+          </Button>
+           <Button onClick={() => handleAuthAction('signUp')} className="w-full" size="lg" variant="secondary" disabled={isLoading}>
+             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Sign Up
           </Button>
           <Button
             variant="ghost"
