@@ -9,6 +9,7 @@ import AppHeader from './layout/AppHeader';
 import AppNav from './layout/AppNav';
 import Heatmap from './heatmap/Heatmap';
 import Planner from './planner/Planner';
+import RoadTripPlanner from './road-trip/RoadTripPlanner';
 import RevenueDashboard from './revenue/RevenueDashboard';
 import ClientCrm from './crm/ClientCrm';
 import CommunityForum from './community/CommunityForum';
@@ -136,6 +137,8 @@ export default function MasseurProApp() {
                 onCitySelect={handleCitySelect} 
                 userTier={userTier}
             />;
+        case 'road-trip':
+            return <RoadTripPlanner userTier={userTier} />;
         case 'revenue':
             return <RevenueDashboard userTier={userTier} />;
         case 'clients':

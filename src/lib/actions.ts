@@ -4,6 +4,7 @@
 import { generateOptimalPricing, GenerateOptimalPricingInput } from "@/ai/flows/generate-optimal-pricing";
 import { predictMassageDemand } from "@/ai/flows/predict-massage-demand";
 import { generateTripItinerary, GenerateTripItineraryInput } from "@/ai/flows/generate-trip-itinerary";
+import { generateRoadTripItinerary, GenerateRoadTripItineraryInput } from "@/ai/flows/generate-road-trip-itinerary";
 import { cities } from "./data";
 import type { Forecast } from "./types";
 
@@ -25,4 +26,8 @@ export async function getOptimalPricingAction(input: GenerateOptimalPricingInput
 
 export async function generateItineraryAction(input: GenerateTripItineraryInput) {
     return await generateTripItinerary(input);
+}
+
+export async function generateRoadTripAction(input: GenerateRoadTripItineraryInput) {
+    return await generateRoadTripItinerary(input);
 }

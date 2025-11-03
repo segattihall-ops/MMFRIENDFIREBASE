@@ -1,8 +1,9 @@
+
 "use client";
 
 import type { ActiveTab } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Plane, DollarSign, Users, MessageSquare, ShieldCheck, HeartHandshake } from 'lucide-react';
+import { LayoutGrid, Plane, DollarSign, Users, MessageSquare, ShieldCheck, HeartHandshake, Route } from 'lucide-react';
 
 interface AppNavProps {
   activeTab: ActiveTab;
@@ -13,6 +14,7 @@ interface AppNavProps {
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
   { id: 'planner', label: 'Trip Planner', icon: Plane },
+  { id: 'road-trip', label: 'Road Trip', icon: Route },
   { id: 'safety', label: 'Safety', icon: HeartHandshake },
   { id: 'revenue', label: 'Revenue', icon: DollarSign },
   { id: 'clients', label: 'Clients', icon: Users },
@@ -30,15 +32,17 @@ export default function AppNav({ activeTab, setActiveTab, user }: AppNavProps) {
     <div className="border-b">
       <nav className="max-w-7xl mx-auto flex justify-center overflow-x-auto -mb-px" aria-label="Tabs">
         {allNavItems.map(tab => {
-          const isGoldOrHigher = user.tier === 'gold' || user.tier === 'platinum';
+          const isPlatinum = user.tier === 'platinum';
+          const isGoldOrHigher = user.tier === 'gold' || isPlatinum;
           const isSilverOrHigher = user.tier === 'silver' || isGoldOrHigher;
 
           const isDisabled = 
             (tab.id === 'planner' && !isGoldOrHigher) ||
+            (tab.id === 'road-trip' && !isPlatinum) ||
             (tab.id === 'safety' && !isSilverOrHigher) ||
-            (tab.id === 'revenue' && user.tier !== 'platinum') ||
-            (tab.id === 'clients' && user.tier !== 'platinum') ||
-            (tab.id === 'community' && user.tier !== 'platinum');
+            (tab.id === 'revenue' && !isPlatinum) ||
+            (tab.id === 'clients' && !isPlatinum) ||
+            (tab.id === 'community' && !isPlatinum);
 
             return (
               <button
