@@ -15,15 +15,15 @@ interface ClientCrmProps {
 }
 
 export default function ClientCrm({ userTier }: ClientCrmProps) {
-    if (userTier !== 'platinum') {
+    if (userTier !== 'platinum' && userTier !== 'gold') {
       return (
         <Card className="text-center p-8">
-          <CardTitle className="font-headline text-2xl">This is a Platinum Feature</CardTitle>
+          <CardTitle className="font-headline text-2xl">This is a Premium Feature</CardTitle>
           <CardDescription className="my-4">
-            Upgrade to the Platinum plan to unlock the Client CRM, helping you manage your client database, track appointments, and build relationships.
+            Upgrade to a Gold or Platinum plan to unlock the Client CRM, helping you manage your client database, track appointments, and build relationships.
           </CardDescription>
           <Link href="/subscribe">
-            <Button>Upgrade to Platinum</Button>
+            <Button>Upgrade Plan</Button>
           </Link>
         </Card>
       )

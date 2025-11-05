@@ -16,15 +16,15 @@ interface CommunityForumProps {
 }
 
 export default function CommunityForum({ userTier }: CommunityForumProps) {
-  if (userTier !== 'platinum') {
+  if (userTier !== 'platinum' && userTier !== 'gold') {
       return (
         <Card className="text-center p-8">
-          <CardTitle className="font-headline text-2xl">This is a Platinum Feature</CardTitle>
+          <CardTitle className="font-headline text-2xl">This is a Premium Feature</CardTitle>
           <CardDescription className="my-4">
-            Upgrade to the Platinum plan to access the exclusive community forum, connect with other professionals, and share insights.
+            Upgrade to a Gold or Platinum plan to access the exclusive community forum, connect with other professionals, and share insights.
           </CardDescription>
           <Link href="/subscribe">
-            <Button>Upgrade to Platinum</Button>
+            <Button>Upgrade Plan</Button>
           </Link>
         </Card>
       )

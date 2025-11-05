@@ -34,16 +34,16 @@ export default function AppNav({ activeTab, setActiveTab, user }: AppNavProps) {
     <div className="border-b">
       <nav className="max-w-7xl mx-auto flex justify-center overflow-x-auto -mb-px" aria-label="Tabs">
         {allNavItems.map(tab => {
-          const isPlatinum = user.tier === 'platinum';
+          const isGoldOrPlatinum = user.tier === 'gold' || user.tier === 'platinum';
           
           const isDisabled = 
             (tab.id === 'planner' && user.tier === 'free') ||
-            (tab.id === 'road-trip' && !isPlatinum) ||
-            (tab.id === 'masseurbnb' && !isPlatinum) ||
+            (tab.id === 'road-trip' && !isGoldOrPlatinum) ||
+            (tab.id === 'masseurbnb' && !isGoldOrPlatinum) ||
             (tab.id === 'safety' && user.tier === 'free') ||
-            (tab.id === 'revenue' && !isPlatinum) ||
-            (tab.id === 'clients' && !isPlatinum) ||
-            (tab.id === 'community' && !isPlatinum);
+            (tab.id === 'revenue' && !isGoldOrPlatinum) ||
+            (tab.id === 'clients' && !isGoldOrPlatinum) ||
+            (tab.id === 'community' && !isGoldOrPlatinum);
 
             return (
               <button

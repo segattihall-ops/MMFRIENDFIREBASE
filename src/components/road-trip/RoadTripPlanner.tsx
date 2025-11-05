@@ -84,21 +84,21 @@ export default function RoadTripPlanner({ userTier }: RoadTripPlannerProps) {
     }
   };
 
-  if (userTier !== 'platinum') {
+  if (userTier !== 'platinum' && userTier !== 'gold') {
     return (
       <Card className="text-center p-8">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">
-            This is a Platinum Feature
+            This is a Premium Feature
           </CardTitle>
           <CardDescription className="my-4">
-            Upgrade to the Platinum plan to unlock the AI Road Trip Planner and
+            Upgrade to a Gold or Platinum plan to unlock the AI Road Trip Planner and
             optimize your travel routes for maximum profit.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Link href="/subscribe">
-            <Button>Upgrade to Platinum</Button>
+            <Button>Upgrade Plan</Button>
           </Link>
         </CardContent>
       </Card>

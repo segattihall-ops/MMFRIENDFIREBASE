@@ -9,18 +9,18 @@ interface MasseurBnbProps {
 }
 
 export default function MasseurBnb({ userTier }: MasseurBnbProps) {
-  if (userTier !== 'platinum') {
+  if (userTier !== 'platinum' && userTier !== 'gold') {
       return (
         <Card className="text-center p-8">
             <CardHeader>
-                <CardTitle className="font-headline text-2xl">This is a Platinum Feature</CardTitle>
+                <CardTitle className="font-headline text-2xl">This is a Premium Feature</CardTitle>
                 <CardDescription className="my-4">
-                Upgrade to the Platinum plan to access MasseurBnB for short-term housing and room sharing.
+                Upgrade to a Gold or Platinum plan to access MasseurBnB for short-term housing and room sharing.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Link href="/subscribe">
-                    <Button>Upgrade to Platinum</Button>
+                    <Button>Upgrade Plan</Button>
                 </Link>
             </CardContent>
         </Card>
