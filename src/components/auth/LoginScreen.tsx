@@ -11,7 +11,6 @@ import { Sun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/firebase';
 import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
-import { AuthError, onAuthStateChanged } from 'firebase/auth';
 
 const AppLogo = () => (
     <svg 
@@ -39,9 +38,7 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
   const [email, setEmail] = useState('test@masseurfriend.com');
   const [password, setPassword] = useState('password');
   const [rememberMe, setRememberMe] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
   const [actionInProgress, setActionInProgress] = useState(false);
-
 
   useEffect(() => {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
@@ -50,29 +47,6 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
       setRememberMe(true);
     }
   }, []);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-        setIsLoading(false);
-        setActionInProgress(false);
-        if (user) {
-            toast({
-                title: "Login Successful",
-                description: `Welcome back, ${user.email}!`,
-            });
-        }
-    }, (error: AuthError) => {
-        setIsLoading(false);
-        setActionInProgress(false);
-        toast({
-            variant: "destructive",
-            title: "Authentication Error",
-            description: error.message,
-        });
-    });
-
-    return () => unsubscribe();
-  }, [auth, toast]);
 
   const handleAuthAction = (action: 'signIn' | 'signUp') => {
     if (!email || !password) {
@@ -92,20 +66,17 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
     
     setActionInProgress(true);
 
-    if (action === 'signIn') {
-        initiateEmailSignIn(auth, email, password);
-    } else {
-        initiateEmailSignUp(auth, email, password);
-    }
+    const promise = action === 'signIn'
+        ? initiateEmailSignIn(auth, email, password)
+        : initiateEmailSignUp(auth, email, password);
+
+    promise.catch(() => {
+      // The non-blocking login functions handle their own toasts for errors.
+      // We just need to stop the loading spinner here.
+    }).finally(() => {
+        setActionInProgress(false);
+    });
   };
-  
-  if (isLoading) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-            <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-    )
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background transition-colors duration-300">

@@ -2,9 +2,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { ActiveTab, Forecast } from '@/lib/types';
+import type { ActiveTab, Forecast, User } from '@/lib/types';
 import { predictAllDemandsAction } from '@/lib/actions';
-import LoginScreen from './auth/LoginScreen';
 import AppHeader from './layout/AppHeader';
 import AppNav from './layout/AppNav';
 import Heatmap from './heatmap/Heatmap';
@@ -17,15 +16,27 @@ import SafetyReport from './safety/SafetyReport';
 import AdminDashboard from './admin/AdminDashboard';
 import UserProfile from './profile/UserProfile';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase/auth/use-user';
-import { signOut, Auth } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useUser, useAuth, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { signOut } from 'firebase/auth';
 import MasseurBnb from './masseurbnb/MasseurBnb';
 import ServicesMarketplace from './services/ServicesMarketplace';
+import { doc } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 
 export default function MasseurProApp() {
   const { user, isLoading: isUserLoading } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
+  const router = useRouter();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+
+  const { data: userDoc, isLoading: isUserDocLoading } = useDoc<User>(userDocRef);
   
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -37,7 +48,11 @@ export default function MasseurProApp() {
   
   const { toast } = useToast();
 
-  const appUser = user ? { name: user.email?.split('@')[0] || 'User', tier: 'platinum' as const, isAdmin: user.email === 'admin@masseurfriend.com' } : null;
+  const appUser = user && userDoc ? {
+    name: user.email?.split('@')[0] || 'User',
+    tier: userDoc.tier,
+    isAdmin: user.email === 'admin@masseurfriend.com'
+  } : null;
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -51,14 +66,11 @@ export default function MasseurProApp() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // useUser hook will update the user state automatically
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
-      setActiveTab('dashboard');
-      setSelectedCity(null);
-      setViewingProfileId(null);
+      router.push('/login');
     } catch (error) {
       console.error("Logout Error:", error);
       toast({
@@ -158,14 +170,14 @@ export default function MasseurProApp() {
             return <MasseurBnb userTier={userTier} />;
         case 'services':
             return <ServicesMarketplace userTier={userTier} onViewProfile={handleViewProfile} />;
+        case 'safety':
+            return <SafetyReport userTier={userTier} />;
         case 'revenue':
             return <RevenueDashboard userTier={userTier} />;
         case 'clients':
             return <ClientCrm userTier={userTier} />;
         case 'community':
             return <CommunityForum userTier={userTier} />;
-        case 'safety':
-            return <SafetyReport userTier={userTier} />;
         case 'admin':
             return appUser?.isAdmin ? <AdminDashboard onViewProfile={handleViewProfile} /> : <p>Access Denied</p>;
         default:
@@ -178,19 +190,14 @@ export default function MasseurProApp() {
     }
   }
 
-  if (isUserLoading) {
+  // This is the main loading gate. It waits for both auth and the user document.
+  if (isUserLoading || isUserDocLoading || !appUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <p>Loading...</p>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
-
-  if (!user) {
-    return <LoginScreen darkMode={darkMode} setDarkMode={setDarkMode} />;
-  }
-  
-  if (!appUser) return null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
