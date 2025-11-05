@@ -48,11 +48,19 @@ export default function MasseurProApp() {
   
   const { toast } = useToast();
 
-  const appUser = user && userDoc ? {
-    name: user.email?.split('@')[0] || 'User',
-    tier: userDoc.tier || 'free',
-    role: userDoc.role || 'customer'
-  } : null;
+  const appUser = useMemo(() => {
+    if (!user || !userDoc) return null;
+    
+    const role = userDoc.role || 'customer';
+    // Admins should always have platinum access.
+    const tier = role === 'admin' ? 'platinum' : userDoc.tier || 'free';
+
+    return {
+      name: user.email?.split('@')[0] || 'User',
+      tier,
+      role,
+    };
+  }, [user, userDoc]);
 
   useEffect(() => {
     const root = window.document.documentElement;

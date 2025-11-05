@@ -34,6 +34,26 @@ export default function AppNav({ activeTab, setActiveTab, user }: AppNavProps) {
     <div className="border-b">
       <nav className="max-w-7xl mx-auto flex justify-center overflow-x-auto -mb-px" aria-label="Tabs">
         {allNavItems.map(tab => {
+          // Admins have access to everything.
+          if (user.role === 'admin') {
+             return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'flex shrink-0 items-center gap-2 px-3 sm:px-4 py-3 border-b-2 font-medium text-sm transition-colors',
+                  activeTab === tab.id
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                )}
+                aria-current={activeTab === tab.id ? 'page' : undefined}
+              >
+                <tab.icon className="h-5 w-5" />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            )
+          }
+
           const isGoldOrPlatinum = user.tier === 'gold' || user.tier === 'platinum';
           
           const isDisabled = 
