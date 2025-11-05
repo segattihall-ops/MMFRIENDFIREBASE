@@ -132,20 +132,15 @@ export async function addServiceListingAction(listingData: Omit<ServiceListing, 
 }
 
 export async function updateUserAction(userData: Partial<User> & { id: string }) {
-    const { app, firestore } = initializeFirebase();
+    const { firestore } = initializeFirebase();
     if (!firestore) {
         throw new Error("Firestore is not initialized.");
     }
 
     try {
-        // This is a placeholder for getting the current user's ID token
-        // In a real app, you would get this from the client's request headers
-        const idToken = ''; // You need to pass the user's ID token to verify admin status
-        // const decodedToken = await getAuth(app).verifyIdToken(idToken);
-        
-        // MOCK: For now, we'll just assume the action is called by an admin.
-        // In a real app, you MUST verify the caller is an admin.
-        const isAdmin = true; // decodedToken.email === 'admin@masseurfriend.com';
+        // This is a placeholder for getting the current user's ID token from the client request.
+        // In a real app, you MUST verify the caller is an admin based on their token.
+        const isAdmin = true; // For development, assume the caller is an admin.
 
         if (!isAdmin) {
              return { success: false, error: "Unauthorized: You must be an admin to perform this action." };
@@ -159,9 +154,8 @@ export async function updateUserAction(userData: Partial<User> & { id: string })
         return { success: true, id };
     } catch (error: any) {
         console.error("Error updating user: ", error);
-        // Check for specific Firebase error codes if necessary
-        if (error.code === 'permission-denied') {
-            return { success: false, error: 'Permission denied. You might not have the rights to update this user.' };
+        if (error.code === 7) { // Firestore permission denied code
+            return { success: false, error: 'Permission denied. You do not have the required rights to update this user.' };
         }
         return { success: false, error: error.message };
     }

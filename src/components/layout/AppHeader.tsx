@@ -12,10 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import type { User } from '@/lib/types';
 
 
 interface AppHeaderProps {
-  user: { name: string; tier: 'platinum' | 'gold' | 'silver' | 'free', isAdmin: boolean } | null;
+  user: { name: string; tier: User['tier'], role: User['role'] } | null;
   onLogout: () => void;
   darkMode: boolean;
   setDarkMode: (dark: boolean) => void;
@@ -74,12 +75,20 @@ export default function AppHeader({ user, onLogout, darkMode, setDarkMode }: App
                 <DropdownMenuSeparator />
                 {user && (
                     <DropdownMenuItem disabled>
-                        <Badge 
-                            variant={user.tier === 'platinum' ? 'default' : 'secondary'} 
-                            className="capitalize"
-                        >
-                            {user.tier} Plan
-                        </Badge>
+                        <div className="flex gap-2">
+                            <Badge 
+                                variant={user.tier === 'platinum' ? 'default' : 'secondary'} 
+                                className="capitalize"
+                            >
+                                {user.tier} Plan
+                            </Badge>
+                             <Badge 
+                                variant='outline'
+                                className="capitalize"
+                            >
+                                {user.role}
+                            </Badge>
+                        </div>
                     </DropdownMenuItem>
                 )}
                  <Link href="/subscribe">

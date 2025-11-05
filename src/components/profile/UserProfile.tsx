@@ -28,6 +28,7 @@ const UserProfile = ({ userId, onViewProfile, isAdmin }: UserProfileProps) => {
   const { toast } = useToast();
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<User['tier'] | ''>('');
+  const [selectedRole, setSelectedRole] = useState<User['role'] | ''>('');
   const [isSaving, setIsSaving] = useState(false);
 
   const userDocRef = useMemoFirebase(() => 
@@ -42,8 +43,9 @@ const UserProfile = ({ userId, onViewProfile, isAdmin }: UserProfileProps) => {
   const { data: reviews, isLoading: isLoadingReviews } = useCollection<Review>(reviewsQuery);
   
   useEffect(() => {
-    if (user?.tier) {
-      setSelectedTier(user.tier);
+    if (user) {
+      setSelectedTier(user.tier || 'free');
+      setSelectedRole(user.role || 'customer');
     }
   }, [user]);
 
@@ -53,12 +55,12 @@ const UserProfile = ({ userId, onViewProfile, isAdmin }: UserProfileProps) => {
   const averageRating = (reviews || []).reduce((acc, r) => acc + r.rating, 0) / (reviews?.length || 1);
 
   const handleSaveChanges = async () => {
-    if (!selectedTier || !user) return;
+    if (!selectedTier || !selectedRole || !user) return;
     setIsSaving(true);
     try {
-        const result = await updateUserAction({ id: user.id, tier: selectedTier });
+        const result = await updateUserAction({ id: user.id, tier: selectedTier, role: selectedRole });
         if(result.success) {
-            toast({ title: "User Updated", description: `${user.email}'s tier has been set to ${selectedTier}.` });
+            toast({ title: "User Updated", description: `${user.email}'s profile has been updated.` });
         } else {
             throw new Error(result.error || 'An unknown error occurred.');
         }
@@ -68,6 +70,8 @@ const UserProfile = ({ userId, onViewProfile, isAdmin }: UserProfileProps) => {
         setIsSaving(false);
     }
   };
+
+  const hasChanges = user ? selectedTier !== user.tier || selectedRole !== user.role : false;
 
   return (
     <div className="space-y-8">
@@ -117,9 +121,9 @@ const UserProfile = ({ userId, onViewProfile, isAdmin }: UserProfileProps) => {
               <ShieldCheck className="w-6 h-6 text-destructive" />
               Admin Controls
             </CardTitle>
-            <CardDescription>Manage user subscription and status.</CardDescription>
+            <CardDescription>Manage user subscription and role.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Subscription Tier</label>
                 <Select value={selectedTier} onValueChange={(value) => setSelectedTier(value as User['tier'])}>
@@ -133,9 +137,22 @@ const UserProfile = ({ userId, onViewProfile, isAdmin }: UserProfileProps) => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">User Role</label>
+                <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as User['role'])}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="customer">Customer</SelectItem>
+                    <SelectItem value="provider">Provider</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={handleSaveChanges} disabled={isSaving || selectedTier === user.tier}>
+            <Button onClick={handleSaveChanges} disabled={isSaving || !hasChanges}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Changes
             </Button>

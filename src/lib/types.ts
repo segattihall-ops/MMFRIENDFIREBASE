@@ -40,6 +40,7 @@ export type ActiveTab = 'dashboard' | 'planner' | 'road-trip' | 'revenue' | 'cli
 export type User = {
   id: string;
   email: string;
+  role: 'admin' | 'customer' | 'provider';
   tier: 'gold' | 'platinum' | 'silver' | 'free';
   status: 'active' | 'canceled';
   revenue: number;

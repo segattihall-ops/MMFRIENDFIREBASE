@@ -1,14 +1,14 @@
 
 "use client";
 
-import type { ActiveTab } from '@/lib/types';
+import type { ActiveTab, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { LayoutGrid, Plane, DollarSign, Users, MessageSquare, ShieldCheck, HeartHandshake, Route, Briefcase, Home } from 'lucide-react';
 
 interface AppNavProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  user: { name: string; tier: 'platinum' | 'gold' | 'silver' | 'free', isAdmin: boolean } | null;
+  user: { name: string; tier: User['tier'], role: User['role'] } | null;
 }
 
 const navItems = [
@@ -28,7 +28,7 @@ const adminNavItem = { id: 'admin', label: 'Admin', icon: ShieldCheck } as const
 
 export default function AppNav({ activeTab, setActiveTab, user }: AppNavProps) {
   if (!user) return null;
-  const allNavItems = user.isAdmin ? [...navItems, adminNavItem] : navItems;
+  const allNavItems = user.role === 'admin' ? [...navItems, adminNavItem] : navItems;
   
   return (
     <div className="border-b">

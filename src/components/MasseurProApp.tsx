@@ -51,7 +51,7 @@ export default function MasseurProApp() {
   const appUser = user && userDoc ? {
     name: user.email?.split('@')[0] || 'User',
     tier: userDoc.tier || 'free',
-    isAdmin: user.email === 'admin@masseurfriend.com'
+    role: userDoc.role || 'customer'
   } : null;
 
   useEffect(() => {
@@ -156,7 +156,7 @@ export default function MasseurProApp() {
         return <UserProfile 
             userId={viewingProfileId} 
             onViewProfile={handleViewProfile} 
-            isAdmin={appUser?.isAdmin || false}
+            isAdmin={appUser?.role === 'admin' || false}
         />;
     }
 
@@ -183,7 +183,7 @@ export default function MasseurProApp() {
         case 'community':
             return <CommunityForum userTier={userTier} />;
         case 'admin':
-            return appUser?.isAdmin ? <AdminDashboard onViewProfile={handleViewProfile} /> : <p>Access Denied</p>;
+            return appUser?.role === 'admin' ? <AdminDashboard onViewProfile={handleViewProfile} /> : <p>Access Denied</p>;
         default:
              return <Heatmap 
                 forecastData={forecastData} 
