@@ -9,6 +9,7 @@ import type { User as AppUser } from '@/lib/types';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
+import InvitationGenerator from './InvitationGenerator';
 
 interface AdminDashboardProps {
     onViewProfile: (userId: string) => void;
@@ -85,50 +86,55 @@ const AdminDashboard = ({ onViewProfile }: AdminDashboardProps) => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* User Management Table */}
-                <Card className="lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle>User Management</CardTitle>
-                        <CardDescription>An overview of all registered users.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Tier</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Revenue</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoadingUsers ? (
-                                    Array.from({ length: 5 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-[70px]" /></TableCell>
-                                        <TableCell className="text-right"><Skeleton className="h-4 w-[50px] ml-auto" /></TableCell>
+                <div className="lg:col-span-2 space-y-6">
+                    {/* User Management Table */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>User Management</CardTitle>
+                            <CardDescription>An overview of all registered users.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Tier</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Revenue</TableHead>
                                     </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {isLoadingUsers ? (
+                                        Array.from({ length: 5 }).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-[70px]" /></TableCell>
+                                            <TableCell className="text-right"><Skeleton className="h-4 w-[50px] ml-auto" /></TableCell>
+                                        </TableRow>
+                                        ))
+                                    ) : (
+                                        users?.map((user) => (
+                                        <TableRow key={user.id} onClick={() => onViewProfile(user.id)} className="cursor-pointer">
+                                            <TableCell className="font-medium">{user.email}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={user.tier === 'platinum' ? 'default' : 'secondary'} className="capitalize">{user.tier || 'free'}</Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={user.status === 'active' ? 'outline' : 'destructive'} className="capitalize border-current">{user.status || 'inactive'}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">${(user.revenue || 0).toLocaleString()}</TableCell>
+                                        </TableRow>
                                     ))
-                                ) : (
-                                    users?.map((user) => (
-                                    <TableRow key={user.id} onClick={() => onViewProfile(user.id)} className="cursor-pointer">
-                                        <TableCell className="font-medium">{user.email}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={user.tier === 'platinum' ? 'default' : 'secondary'} className="capitalize">{user.tier || 'free'}</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={user.status === 'active' ? 'outline' : 'destructive'} className="capitalize border-current">{user.status || 'inactive'}</Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">${(user.revenue || 0).toLocaleString()}</TableCell>
-                                    </TableRow>
-                                ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                     {/* Invitation Generator */}
+                    <InvitationGenerator />
+                </div>
+
 
                 {/* API Status */}
                 <Card>
