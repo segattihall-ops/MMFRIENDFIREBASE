@@ -1,5 +1,10 @@
 
 
+export type FirebaseTimestamp = {
+  seconds: number;
+  nanoseconds: number;
+};
+
 export type City = {
   name: string;
   state: string;
@@ -46,7 +51,7 @@ export type Review = {
     revieweeId: string;
     rating: number;
     comment: string;
-    createdAt: any; 
+    createdAt: FirebaseTimestamp; 
 }
 
 export type ServiceListing = {
@@ -58,7 +63,7 @@ export type ServiceListing = {
   location: string;
   instagramUrl?: string;
   imageUrl?: string;
-  createdAt: any;
+  createdAt: FirebaseTimestamp;
 }
 
     
