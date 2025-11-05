@@ -6,9 +6,10 @@ import { predictMassageDemand } from "@/ai/flows/predict-massage-demand";
 import { generateTripItinerary, GenerateTripItineraryInput } from "@/ai/flows/generate-trip-itinerary";
 import { generateRoadTripItinerary, GenerateRoadTripItineraryInput } from "@/ai/flows/generate-road-trip-itinerary";
 import { cities } from "./data";
-import type { Forecast, Review, ServiceListing } from "./types";
+import type { Forecast, Review, ServiceListing, User } from "./types";
 import { initializeFirebase } from "@/firebase/server-init";
 import { FieldValue } from "firebase-admin/firestore";
+import { getAuth } from 'firebase-admin/auth';
 
 
 const USE_MOCK_DATA = true; // Set to false when you have API quota
@@ -126,6 +127,42 @@ export async function addServiceListingAction(listingData: Omit<ServiceListing, 
         return { success: true, id: docRef.id };
     } catch (error: any) {
         console.error("Error adding service listing: ", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateUserAction(userData: Partial<User> & { id: string }) {
+    const { app, firestore } = initializeFirebase();
+    if (!firestore) {
+        throw new Error("Firestore is not initialized.");
+    }
+
+    try {
+        // This is a placeholder for getting the current user's ID token
+        // In a real app, you would get this from the client's request headers
+        const idToken = ''; // You need to pass the user's ID token to verify admin status
+        // const decodedToken = await getAuth(app).verifyIdToken(idToken);
+        
+        // MOCK: For now, we'll just assume the action is called by an admin.
+        // In a real app, you MUST verify the caller is an admin.
+        const isAdmin = true; // decodedToken.email === 'admin@masseurfriend.com';
+
+        if (!isAdmin) {
+             return { success: false, error: "Unauthorized: You must be an admin to perform this action." };
+        }
+
+        const { id, ...dataToUpdate } = userData;
+        const userRef = firestore.collection('users').doc(id);
+        
+        await userRef.update(dataToUpdate);
+
+        return { success: true, id };
+    } catch (error: any) {
+        console.error("Error updating user: ", error);
+        // Check for specific Firebase error codes if necessary
+        if (error.code === 'permission-denied') {
+            return { success: false, error: 'Permission denied. You might not have the rights to update this user.' };
+        }
         return { success: false, error: error.message };
     }
 }

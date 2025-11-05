@@ -153,7 +153,11 @@ export default function MasseurProApp() {
     }
 
     if (activeTab === 'profile' && viewingProfileId) {
-        return <UserProfile userId={viewingProfileId} onViewProfile={handleViewProfile} />;
+        return <UserProfile 
+            userId={viewingProfileId} 
+            onViewProfile={handleViewProfile} 
+            isAdmin={appUser?.isAdmin || false}
+        />;
     }
 
     switch (activeTab) {

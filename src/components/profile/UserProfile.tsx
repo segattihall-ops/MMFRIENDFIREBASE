@@ -1,10 +1,10 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, MessageSquare, Pencil } from 'lucide-react';
+import { Star, MessageSquare, Pencil, ShieldCheck, Loader2 } from 'lucide-react';
 import { useDoc, useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { doc, collection, query, orderBy } from 'firebase/firestore';
 import type { User, Review } from '@/lib/types';
@@ -12,16 +12,23 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import ReviewForm from './ReviewForm';
 import ReviewItem from './ReviewItem';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { updateUserAction } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserProfileProps {
   userId: string;
   onViewProfile: (userId: string) => void;
+  isAdmin: boolean;
 }
 
-const UserProfile = ({ userId, onViewProfile }: UserProfileProps) => {
+const UserProfile = ({ userId, onViewProfile, isAdmin }: UserProfileProps) => {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
+  const { toast } = useToast();
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<User['tier'] | ''>('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const userDocRef = useMemoFirebase(() => 
     firestore ? doc(firestore, 'users', userId) : null
@@ -31,14 +38,36 @@ const UserProfile = ({ userId, onViewProfile }: UserProfileProps) => {
     firestore ? query(collection(firestore, 'users', userId, 'reviews'), orderBy('createdAt', 'desc')) : null
   , [firestore, userId]);
 
-  const { data: user, isLoading: isLoadingUser } = useDoc<User>(userDocRef);
+  const { data: user, isLoading: isLoadingUser, error: userError } = useDoc<User>(userDocRef);
   const { data: reviews, isLoading: isLoadingReviews } = useCollection<Review>(reviewsQuery);
   
+  useEffect(() => {
+    if (user?.tier) {
+      setSelectedTier(user.tier);
+    }
+  }, [user]);
+
   const hasAlreadyReviewed = reviews?.some(review => review.reviewerId === currentUser?.uid);
   const canReview = currentUser && currentUser.uid !== userId && !hasAlreadyReviewed;
 
   const averageRating = (reviews || []).reduce((acc, r) => acc + r.rating, 0) / (reviews?.length || 1);
 
+  const handleSaveChanges = async () => {
+    if (!selectedTier || !user) return;
+    setIsSaving(true);
+    try {
+        const result = await updateUserAction({ id: user.id, tier: selectedTier });
+        if(result.success) {
+            toast({ title: "User Updated", description: `${user.email}'s tier has been set to ${selectedTier}.` });
+        } else {
+            throw new Error(result.error || 'An unknown error occurred.');
+        }
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: "Update Failed", description: error.message });
+    } finally {
+        setIsSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -80,6 +109,39 @@ const UserProfile = ({ userId, onViewProfile }: UserProfileProps) => {
           </CardFooter>
         )}
       </Card>
+      
+      {isAdmin && user && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline flex items-center gap-2">
+              <ShieldCheck className="w-6 h-6 text-destructive" />
+              Admin Controls
+            </CardTitle>
+            <CardDescription>Manage user subscription and status.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Subscription Tier</label>
+                <Select value={selectedTier} onValueChange={(value) => setSelectedTier(value as User['tier'])}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="gold">Gold</SelectItem>
+                    <SelectItem value="platinum">Platinum</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={handleSaveChanges} disabled={isSaving || selectedTier === user.tier}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
