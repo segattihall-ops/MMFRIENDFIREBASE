@@ -11,14 +11,21 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/fire
 import { initializeFirebase } from "@/firebase/server-init";
 
 export async function predictAllDemandsAction(): Promise<Forecast[]> {
-  // Return mock data directly to avoid hitting API rate limits or incurring costs.
-  const forecasts: Forecast[] = cities.map(city => ({
+  const demandPromises = cities.map(city => 
+    predictMassageDemand({
+      city: city.name,
+      population: city.population,
+      lgbtqIndex: city.lgbtqIndex,
+    }).then(demand => ({
       city: city.name,
       state: city.state,
-      demandScore: Math.floor(Math.random() * 70) + 30, // Random score between 30-100
+      demandScore: demand.demandScore,
       lgbtqIndex: city.lgbtqIndex,
-  }));
-  return Promise.resolve(forecasts);
+    }))
+  );
+
+  const forecasts = await Promise.all(demandPromises);
+  return forecasts;
 }
 
 export async function getOptimalPricingAction(input: GenerateOptimalPricingInput) {
