@@ -7,8 +7,8 @@ import { generateTripItinerary, GenerateTripItineraryInput } from "@/ai/flows/ge
 import { generateRoadTripItinerary, GenerateRoadTripItineraryInput } from "@/ai/flows/generate-road-trip-itinerary";
 import { cities } from "./data";
 import type { Forecast, Review, ServiceListing } from "./types";
-import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { initializeFirebase } from "@/firebase/server-init";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function predictAllDemandsAction(): Promise<Forecast[]> {
   const demandPromises = cities.map(city => 
@@ -49,10 +49,10 @@ export async function submitReviewAction(reviewData: Omit<Review, 'id' | 'create
     try {
         const reviewWithTimestamp = {
             ...reviewData,
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
         };
-        const reviewsCollectionRef = collection(firestore, 'users', reviewData.revieweeId, 'reviews');
-        const docRef = await addDoc(reviewsCollectionRef, reviewWithTimestamp);
+        const reviewsCollectionRef = firestore.collection('users').doc(reviewData.revieweeId).collection('reviews');
+        const docRef = await reviewsCollectionRef.add(reviewWithTimestamp);
         return { success: true, id: docRef.id };
     } catch (error: any) {
         console.error("Error submitting review: ", error);
@@ -69,10 +69,10 @@ export async function addServiceListingAction(listingData: Omit<ServiceListing, 
     try {
         const listingWithTimestamp = {
             ...listingData,
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
         };
-        const listingsCollectionRef = collection(firestore, 'service_listings');
-        const docRef = await addDoc(listingsCollectionRef, listingWithTimestamp);
+        const listingsCollectionRef = firestore.collection('service_listings');
+        const docRef = await listingsCollectionRef.add(listingWithTimestamp);
         return { success: true, id: docRef.id };
     } catch (error: any) {
         console.error("Error adding service listing: ", error);
