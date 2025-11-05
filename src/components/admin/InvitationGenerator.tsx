@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Ticket, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
 
 const invitationSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),

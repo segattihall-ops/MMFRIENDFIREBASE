@@ -9,9 +9,9 @@ import { useDoc, useCollection, useFirestore, useMemoFirebase, useUser } from '@
 import { doc, collection, query, orderBy } from 'firebase/firestore';
 import type { User, Review } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import ReviewForm from './ReviewForm';
+import ReviewItem from './ReviewItem';
 
 interface UserProfileProps {
   userId: string;
@@ -36,36 +36,6 @@ const UserProfile = ({ userId, onViewProfile }: UserProfileProps) => {
   
   const hasAlreadyReviewed = reviews?.some(review => review.reviewerId === currentUser?.uid);
   const canReview = currentUser && currentUser.uid !== userId && !hasAlreadyReviewed;
-
-
-  // Helper component for a single review
-  const ReviewItem = ({ review }: { review: Review }) => {
-    const reviewerDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', review.reviewerId) : null, [firestore, review.reviewerId]);
-    const { data: reviewer } = useDoc<User>(reviewerDocRef);
-
-    return (
-       <div className="border-b pb-4 last:border-b-0">
-          <div className="flex justify-between items-start mb-2">
-              <div className="flex items-center gap-2">
-                  <Avatar className="w-8 h-8 cursor-pointer" onClick={() => onViewProfile(review.reviewerId)}>
-                      <AvatarImage src={`https://picsum.photos/seed/rev${review.reviewerId}/40/40`} alt={reviewer?.email} />
-                      <AvatarFallback>{reviewer ? reviewer.email.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
-                  </Avatar>
-                  <p className="font-semibold cursor-pointer" onClick={() => onViewProfile(review.reviewerId)}>{reviewer?.email.split('@')[0] || 'Anonymous'}</p>
-              </div>
-              <div className="flex items-center shrink-0">
-                  {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} />
-                  ))}
-              </div>
-          </div>
-        <p className="text-muted-foreground pl-10">{review.comment}</p>
-        <p className="text-xs text-muted-foreground pl-10 mt-1">
-            {review.createdAt ? formatDistanceToNow(new Date(review.createdAt), { addSuffix: true }) : ''}
-        </p>
-      </div>
-    )
-  }
 
   const averageRating = (reviews || []).reduce((acc, r) => acc + r.rating, 0) / (reviews?.length || 1);
 
@@ -132,7 +102,7 @@ const UserProfile = ({ userId, onViewProfile }: UserProfileProps) => {
                     </div>
                 ))
             ) : reviews && reviews.length > 0 ? (
-                reviews.map((review) => <ReviewItem key={review.id} review={review} />)
+                reviews.map((review) => <ReviewItem key={review.id} review={review} onViewProfile={onViewProfile} />)
             ) : (
                 <p className="text-muted-foreground text-center py-8">No reviews yet.</p>
             )}
