@@ -54,8 +54,8 @@ service cloud.firestore {
       // On create, any authenticated user can create their own profile, setting their role to 'customer'.
       allow create: if isOwner() && request.resource.data.role == 'customer';
       
-      // An owner can update their own document, but cannot change their role. Admins can change anything.
-      allow update: if (isOwner() && request.resource.data.role == resource.data.role) || isAdmin();
+      // An owner can update their own document. Admins can change anything.
+      allow update: if isOwner() || isAdmin();
       
       allow delete: if isOwner() || isAdmin();
 
