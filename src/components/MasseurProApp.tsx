@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ActiveTab, Forecast, User } from '@/lib/types';
 import { predictAllDemandsAction } from '@/lib/actions';
 import AppHeader from './layout/AppHeader';
