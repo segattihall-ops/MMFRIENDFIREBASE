@@ -73,11 +73,18 @@ export default function MasseurProApp() {
 
   const handleLogout = async () => {
     try {
+      // Clear any local state first
+      setSelectedCity(null);
+      setViewingProfileId(null);
+      setActiveTab('dashboard');
+
       await signOut(auth);
+      
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
+
       router.push('/login');
     } catch (error) {
       console.error("Logout Error:", error);
@@ -200,6 +207,12 @@ export default function MasseurProApp() {
                 userTier={userTier}
             />;
     }
+  }
+
+  // If the user has been confirmed to be logged out, return null immediately.
+  // The withAuth HOC or a page-level effect will handle the redirect.
+  if (!isUserLoading && !user) {
+    return null;
   }
 
   // This is the main loading gate. It waits for both auth and the user document.
