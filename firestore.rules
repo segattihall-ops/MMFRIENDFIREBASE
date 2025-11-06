@@ -36,6 +36,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
+      // Check the user's role from their document in the /users collection.
       return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
@@ -54,8 +55,9 @@ service cloud.firestore {
       // On create, any authenticated user can create their own profile, setting their role to 'customer'.
       allow create: if isOwner() && request.resource.data.role == 'customer';
       
-      // An owner can update their own document. Admins can change anything.
-      allow update: if isOwner() || isAdmin();
+      // An owner can update their own document, but CANNOT change their role.
+      // Admins can change anything.
+      allow update: if (isOwner() && request.resource.data.role == resource.data.role) || isAdmin();
       
       allow delete: if isOwner() || isAdmin();
 

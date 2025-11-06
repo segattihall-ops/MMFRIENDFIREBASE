@@ -37,13 +37,15 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
     const user = userCredential.user;
     const db = getFirestore(authInstance.app);
     const userRef = doc(db, 'users', user.uid);
-    const newUser: Omit<User, 'tier' | 'status' | 'revenue'> & { role: 'admin' } = {
+    // New users should always be created as 'customer' with 'free' tier by default.
+    const newUser: Partial<User> = {
         id: user.uid,
         email: user.email || '',
-        role: 'admin',
+        role: 'customer',
+        tier: 'free',
+        status: 'active',
+        revenue: 0,
     };
-    // The tier, status, and revenue will be set by default by backend triggers or admins.
-    // Here we only set the essential information.
     setDocumentNonBlocking(userRef, newUser, { merge: false });
   })
   .catch(error => {

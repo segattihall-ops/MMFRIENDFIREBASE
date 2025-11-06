@@ -1,15 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { useState, useEffect } from 'react';
 import LoginScreen from '@/components/auth/LoginScreen';
-import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import withAuth from '@/components/auth/withAuth';
 
-export default function LoginPage() {
-  const { user, isLoading } = useUser();
-  const router = useRouter();
+function LoginPage() {
   const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
@@ -21,19 +16,8 @@ export default function LoginPage() {
     }
   }, [darkMode]);
 
-  useEffect(() => {
-    if (!isLoading && user) {
-      router.replace('/');
-    }
-  }, [user, isLoading, router]);
-
-  if (isLoading || user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return <LoginScreen darkMode={darkMode} setDarkMode={setDarkMode} />;
 }
+
+// Wrap with withAuth and set 'public' to true
+export default withAuth(LoginPage, { public: true });
