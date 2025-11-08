@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Ticket, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
+import { createInvitationAction } from '@/lib/actions';
 
 const invitationSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
@@ -55,16 +56,24 @@ export default function InvitationGenerator() {
     setIsLoading(true);
     setInvitationLink('');
 
-    // In a real app, you would call a server action to create the invitation in Firestore
-    // and get a unique code. For this mock, we'll generate a placeholder link.
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-      
-      const inviteCode = `INVITE_${Date.now()}`;
+      // Call server action to create invitation in Firestore
+      const result = await createInvitationAction({
+        email: values.email,
+        tier: values.tier,
+        couponCode: values.couponCode,
+        discountPercentage: values.discountPercentage,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create invitation');
+      }
+
+      // Generate invitation link with the unique code
       const params = new URLSearchParams({
         email: values.email,
         tier: values.tier,
-        code: inviteCode,
+        code: result.inviteCode!,
       });
       if (values.couponCode && values.discountPercentage) {
         params.append('coupon', values.couponCode);
@@ -75,13 +84,17 @@ export default function InvitationGenerator() {
 
       toast({
         title: 'Invitation Generated!',
-        description: 'The invitation link is now available below.',
+        description: `Invitation created successfully with code: ${result.inviteCode}`,
       });
+
+      // Reset form after successful submission
+      form.reset();
     } catch (error) {
+      console.error('Error creating invitation:', error);
       toast({
         variant: 'destructive',
         title: 'Failed to Generate Invitation',
-        description: 'An unexpected error occurred. Please try again.',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsLoading(false);
