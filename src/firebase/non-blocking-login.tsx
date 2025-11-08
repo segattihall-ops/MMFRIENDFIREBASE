@@ -12,6 +12,7 @@ import {
   signInWithPhoneNumber,
   ConfirmationResult,
   UserCredential,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { toast } from '@/hooks/use-toast';
 import { getFirestore, doc } from 'firebase/firestore';
@@ -44,12 +45,14 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
     const user = userCredential.user;
     const db = getFirestore(authInstance.app);
     const userRef = doc(db, 'users', user.uid);
+    const isAdminEmail = user.email === 'admin@masseurfriend.com';
     const newUser: User = {
         id: user.uid,
         email: user.email || '',
-        tier: 'free',
+        tier: isAdminEmail ? 'platinum' : 'free',
         status: 'active',
         revenue: 0,
+        isAdmin: isAdminEmail,
     };
     setDocumentNonBlocking(userRef, newUser, { merge: false });
   })
@@ -308,6 +311,42 @@ export function initiateSignOut(authInstance: Auth): Promise<void> {
         variant: "destructive",
         title: "Sign-Out Failed",
         description: error.message,
+      });
+    });
+
+  return promise;
+}
+
+/**
+ * Initiate password reset email (non-blocking).
+ * Sends a password reset email to the specified email address.
+ * @param authInstance - The Auth instance
+ * @param email - The user's email address
+ * @returns Promise<void>
+ */
+export function initiatePasswordReset(authInstance: Auth, email: string): Promise<void> {
+  const promise = sendPasswordResetEmail(authInstance, email);
+
+  promise
+    .then(() => {
+      toast({
+        title: "Password Reset Email Sent",
+        description: `A password reset link has been sent to ${email}. Please check your inbox.`,
+      });
+    })
+    .catch(error => {
+      let description = error.message;
+      if (error.code === 'auth/user-not-found') {
+        description = "No account found with this email address.";
+      } else if (error.code === 'auth/invalid-email') {
+        description = "Invalid email address format.";
+      } else if (error.code === 'auth/too-many-requests') {
+        description = "Too many requests. Please try again later.";
+      }
+      toast({
+        variant: "destructive",
+        title: "Password Reset Failed",
+        description,
       });
     });
 

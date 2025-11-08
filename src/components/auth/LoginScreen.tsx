@@ -11,6 +11,7 @@ import { Sun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/firebase';
 import { initiateEmailSignIn, initiateEmailSignUp, initiateGoogleSignIn, initiateAppleSignIn } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
+import PasswordResetModal from './PasswordResetModal';
 
 const AppLogo = () => (
     <svg 
@@ -39,6 +40,7 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
   const [password, setPassword] = useState('password');
   const [rememberMe, setRememberMe] = useState(true);
   const [actionInProgress, setActionInProgress] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   useEffect(() => {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
@@ -135,14 +137,24 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
                disabled={actionInProgress}
             />
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-                id="remember" 
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                disabled={actionInProgress}
-            />
-            <Label htmlFor="remember" className="text-sm font-normal">Remember me</Label>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                  id="remember" 
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  disabled={actionInProgress}
+              />
+              <Label htmlFor="remember" className="text-sm font-normal">Remember me</Label>
+            </div>
+            <Button
+              variant="link"
+              className="text-sm text-primary px-0"
+              onClick={() => setShowPasswordReset(true)}
+              disabled={actionInProgress}
+            >
+              Forgot Password?
+            </Button>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
@@ -206,6 +218,10 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
           </Button>
         </CardFooter>
       </Card>
+      <PasswordResetModal 
+        isOpen={showPasswordReset} 
+        onClose={() => setShowPasswordReset(false)} 
+      />
     </div>
   );
 }
