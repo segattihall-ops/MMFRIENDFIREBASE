@@ -51,7 +51,7 @@ export default function MasseurProApp() {
   const appUser = user && userDoc ? {
     name: user.email?.split('@')[0] || 'User',
     tier: userDoc.tier,
-    isAdmin: user.email === 'admin@masseurfriend.com'
+    isAdmin: userDoc.isAdmin === true || user.email === 'admin@masseurfriend.com'
   } : null;
 
   useEffect(() => {

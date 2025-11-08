@@ -38,6 +38,7 @@ export type User = {
   tier: 'gold' | 'platinum' | 'silver' | 'free';
   status: 'active' | 'canceled';
   revenue: number;
+  isAdmin?: boolean;
 };
 
 export type Review = {
