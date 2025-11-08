@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 export default function LoginPage() {
-  const { user, isLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
   const [darkMode, setDarkMode] = useState(true);
 
@@ -22,12 +22,12 @@ export default function LoginPage() {
   }, [darkMode]);
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isUserLoading && user) {
       router.replace('/');
     }
-  }, [user, isLoading, router]);
+  }, [user, isUserLoading, router]);
 
-  if (isLoading || user) {
+  if (isUserLoading || user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />

@@ -7,16 +7,16 @@ import { Loader2 } from 'lucide-react';
 
 const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) => {
   const AuthComponent = (props: P) => {
-    const { user, isLoading } = useUser();
+    const { user, isUserLoading } = useUser();
     const router = useRouter();
 
     useEffect(() => {
-      if (!isLoading && !user) {
+      if (!isUserLoading && !user) {
         router.replace('/login');
       }
-    }, [user, isLoading, router]);
+    }, [user, isUserLoading, router]);
 
-    if (isLoading || !user) {
+    if (isUserLoading || !user) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <Loader2 className="h-8 w-8 animate-spin" />

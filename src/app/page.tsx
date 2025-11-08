@@ -6,18 +6,18 @@ import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 
 export default function HomePage() {
-  const { user, isLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isUserLoading) {
       if (user) {
         router.replace('/dashboard');
       } else {
         router.replace('/login');
       }
     }
-  }, [user, isLoading, router]);
+  }, [user, isUserLoading, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
