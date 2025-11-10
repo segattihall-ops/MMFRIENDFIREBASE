@@ -15,7 +15,7 @@ import {
   sendPasswordResetEmail,
 } from 'firebase/auth';
 import { toast } from '@/hooks/use-toast';
-import { getFirestore, doc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from './non-blocking-updates';
 import type { User } from '@/lib/types';
 
@@ -77,22 +77,29 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
   // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
   const promise = signInWithEmailAndPassword(authInstance, email, password);
   promise
-    .then(userCredential => {
-      // After successful sign-in, create/update user document in Firestore if it doesn't exist
+    .then(async userCredential => {
+      // After successful sign-in, only create user document if it doesn't exist
       const user = userCredential.user;
       const db = getFirestore(authInstance.app);
       const userRef = doc(db, 'users', user.uid);
-      const isAdminEmail = user.email === 'admin@masseurfriend.com';
-      const userData: User = {
-        id: user.uid,
-        email: user.email || '',
-        tier: isAdminEmail ? 'platinum' : 'free',
-        status: 'active',
-        revenue: 0,
-        isAdmin: isAdminEmail,
-      };
-      // Use merge: true to avoid overwriting existing user data
-      setDocumentNonBlocking(userRef, userData, { merge: true });
+      
+      // Check if user document already exists
+      const docSnap = await getDoc(userRef);
+      
+      if (!docSnap.exists()) {
+        // Only create document for new users
+        const isAdminEmail = user.email === 'admin@masseurfriend.com';
+        const userData: User = {
+          id: user.uid,
+          email: user.email || '',
+          tier: isAdminEmail ? 'platinum' : 'free',
+          status: 'active',
+          revenue: 0,
+          isAdmin: isAdminEmail,
+        };
+        setDocumentNonBlocking(userRef, userData, { merge: true });
+      }
+      // If document exists, do nothing - preserve existing user data
     })
     .catch(error => {
       let description = error.message;
@@ -117,19 +124,27 @@ export function initiateGoogleSignIn(authInstance: Auth): Promise<UserCredential
 
   const promise = signInWithPopup(authInstance, provider);
   promise
-    .then(userCredential => {
-      // After successful sign-in, create/update user document in Firestore
+    .then(async userCredential => {
+      // After successful sign-in, only create user document if it doesn't exist
       const user = userCredential.user;
       const db = getFirestore(authInstance.app);
       const userRef = doc(db, 'users', user.uid);
-      const newUser: User = {
-        id: user.uid,
-        email: user.email || '',
-        tier: 'free',
-        status: 'active',
-        revenue: 0,
-      };
-      setDocumentNonBlocking(userRef, newUser, { merge: true });
+      
+      // Check if user document already exists
+      const docSnap = await getDoc(userRef);
+      
+      if (!docSnap.exists()) {
+        // Only create document for new users
+        const newUser: User = {
+          id: user.uid,
+          email: user.email || '',
+          tier: 'free',
+          status: 'active',
+          revenue: 0,
+        };
+        setDocumentNonBlocking(userRef, newUser, { merge: true });
+      }
+      // If document exists, do nothing - preserve existing user data
 
       toast({
         title: "Google Sign-In Successful",
@@ -162,19 +177,27 @@ export function initiateAppleSignIn(authInstance: Auth): Promise<UserCredential>
 
   const promise = signInWithPopup(authInstance, provider);
   promise
-    .then(userCredential => {
-      // After successful sign-in, create/update user document in Firestore
+    .then(async userCredential => {
+      // After successful sign-in, only create user document if it doesn't exist
       const user = userCredential.user;
       const db = getFirestore(authInstance.app);
       const userRef = doc(db, 'users', user.uid);
-      const newUser: User = {
-        id: user.uid,
-        email: user.email || '',
-        tier: 'free',
-        status: 'active',
-        revenue: 0,
-      };
-      setDocumentNonBlocking(userRef, newUser, { merge: true });
+      
+      // Check if user document already exists
+      const docSnap = await getDoc(userRef);
+      
+      if (!docSnap.exists()) {
+        // Only create document for new users
+        const newUser: User = {
+          id: user.uid,
+          email: user.email || '',
+          tier: 'free',
+          status: 'active',
+          revenue: 0,
+        };
+        setDocumentNonBlocking(userRef, newUser, { merge: true });
+      }
+      // If document exists, do nothing - preserve existing user data
 
       toast({
         title: "Apple Sign-In Successful",
@@ -273,20 +296,28 @@ export function confirmPhoneSignIn(
   const promise = confirmationResult.confirm(verificationCode);
 
   promise
-    .then(userCredential => {
-      // After successful sign-in, create/update user document in Firestore
+    .then(async userCredential => {
+      // After successful sign-in, only create user document if it doesn't exist
       const user = userCredential.user;
-      const authInstance = user.auth as Auth;
+      const authInstance = (user as any).auth as Auth;
       const db = getFirestore(authInstance.app);
       const userRef = doc(db, 'users', user.uid);
-      const newUser: User = {
-        id: user.uid,
-        email: user.email || '',
-        tier: 'free',
-        status: 'active',
-        revenue: 0,
-      };
-      setDocumentNonBlocking(userRef, newUser, { merge: true });
+      
+      // Check if user document already exists
+      const docSnap = await getDoc(userRef);
+      
+      if (!docSnap.exists()) {
+        // Only create document for new users
+        const newUser: User = {
+          id: user.uid,
+          email: user.email || '',
+          tier: 'free',
+          status: 'active',
+          revenue: 0,
+        };
+        setDocumentNonBlocking(userRef, newUser, { merge: true });
+      }
+      // If document exists, do nothing - preserve existing user data
 
       toast({
         title: "Phone Sign-In Successful",
