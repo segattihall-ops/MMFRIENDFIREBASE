@@ -54,7 +54,8 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
         revenue: 0,
         isAdmin: isAdminEmail,
     };
-    setDocumentNonBlocking(userRef, newUser, { merge: false });
+    // Use merge: true to safely create or update the user document
+    setDocumentNonBlocking(userRef, newUser, { merge: true });
   })
   .catch(error => {
     let description = error.message;
@@ -75,17 +76,35 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
 export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): Promise<UserCredential> {
   // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
   const promise = signInWithEmailAndPassword(authInstance, email, password);
-  promise.catch(error => {
-     let description = error.message;
-     if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+  promise
+    .then(userCredential => {
+      // After successful sign-in, create/update user document in Firestore if it doesn't exist
+      const user = userCredential.user;
+      const db = getFirestore(authInstance.app);
+      const userRef = doc(db, 'users', user.uid);
+      const isAdminEmail = user.email === 'admin@masseurfriend.com';
+      const userData: User = {
+        id: user.uid,
+        email: user.email || '',
+        tier: isAdminEmail ? 'platinum' : 'free',
+        status: 'active',
+        revenue: 0,
+        isAdmin: isAdminEmail,
+      };
+      // Use merge: true to avoid overwriting existing user data
+      setDocumentNonBlocking(userRef, userData, { merge: true });
+    })
+    .catch(error => {
+      let description = error.message;
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
         description = "Invalid credentials. Please check your email and password and try again.";
-     }
-    toast({
+      }
+      toast({
         variant: "destructive",
         title: "Sign-In Failed",
         description,
+      });
     });
-  });
   return promise;
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }
