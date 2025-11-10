@@ -52,12 +52,6 @@ export default function AppHeader({ user, onLogout, darkMode, setDarkMode }: App
           </div>
           
           <div className="flex items-center gap-2">
-             <Link href="/subscribe" className="hidden sm:block">
-              <Button variant="outline" size="sm" className="font-semibold">
-                View Plans
-              </Button>
-            </Link>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                  <Button variant="outline" className="flex gap-2 items-center rounded-full pl-1 pr-3 py-1 h-auto">
@@ -91,12 +85,6 @@ export default function AppHeader({ user, onLogout, darkMode, setDarkMode }: App
                         </div>
                     </DropdownMenuItem>
                 )}
-                 <Link href="/subscribe">
-                    <DropdownMenuItem>
-                        <Gem className="mr-2 h-4 w-4" />
-                        <span>Upgrade</span>
-                    </DropdownMenuItem>
-                </Link>
                 <DropdownMenuSeparator />
                  <DropdownMenuItem onClick={() => setDarkMode(!darkMode)}>
                     {darkMode ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}

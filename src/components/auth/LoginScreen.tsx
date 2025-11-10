@@ -1,16 +1,12 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Sun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/firebase';
-import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
-import { useToast } from '@/hooks/use-toast';
+import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 
 const AppLogo = () => (
     <svg 
@@ -34,47 +30,12 @@ interface LoginScreenProps {
 
 export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps) {
   const auth = useAuth();
-  const { toast } = useToast();
-  const [email, setEmail] = useState('test@masseurfriend.com');
-  const [password, setPassword] = useState('password');
-  const [rememberMe, setRememberMe] = useState(true);
   const [actionInProgress, setActionInProgress] = useState(false);
 
-  useEffect(() => {
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
-    if (rememberedEmail) {
-      setEmail(rememberedEmail);
-      setRememberMe(true);
-    }
-  }, []);
-
-  const handleAuthAction = (action: 'signIn' | 'signUp') => {
-    if (!email || !password) {
-        toast({
-            variant: "destructive",
-            title: "Missing fields",
-            description: "Please enter both email and password.",
-        });
-      return;
-    }
-
-    if (rememberMe) {
-        localStorage.setItem('rememberedEmail', email);
-    } else {
-        localStorage.removeItem('rememberedEmail');
-    }
-    
+  const handleLogin = () => {
     setActionInProgress(true);
-
-    const promise = action === 'signIn'
-        ? initiateEmailSignIn(auth, email, password)
-        : initiateEmailSignUp(auth, email, password);
-
-    promise.catch(() => {
-      // The non-blocking login functions handle their own toasts for errors.
-      // We just need to stop the loading spinner here.
-    }).finally(() => {
-        setActionInProgress(false);
+    initiateAnonymousSignIn(auth).finally(() => {
+      setActionInProgress(false);
     });
   };
 
@@ -88,49 +49,13 @@ export default function LoginScreen({ darkMode, setDarkMode }: LoginScreenProps)
           <CardTitle className="text-3xl font-bold font-headline">Welcome to MasseurPro</CardTitle>
           <CardDescription>AI market intelligence by XRankFlow MG.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="admin@masseurfriend.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signIn')}
-              disabled={actionInProgress}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signIn')}
-               disabled={actionInProgress}
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-                id="remember" 
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                disabled={actionInProgress}
-            />
-            <Label htmlFor="remember" className="text-sm font-normal">Remember me</Label>
-          </div>
+        <CardContent>
+            <p className="text-sm text-center text-muted-foreground">Click the button below to start your session.</p>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-           <Button onClick={() => handleAuthAction('signIn')} className="w-full font-bold" size="lg" disabled={actionInProgress}>
+           <Button onClick={handleLogin} className="w-full font-bold" size="lg" disabled={actionInProgress}>
             {actionInProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In
-          </Button>
-           <Button onClick={() => handleAuthAction('signUp')} className="w-full" size="lg" variant="secondary" disabled={actionInProgress}>
-             {actionInProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign Up
+            Enter Anonymously
           </Button>
           <Button
             variant="ghost"
