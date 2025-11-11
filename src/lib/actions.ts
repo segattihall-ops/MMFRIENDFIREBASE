@@ -14,7 +14,11 @@ import { getAuth } from 'firebase-admin/auth';
 
 const USE_MOCK_DATA = true; // Set to false when you have API quota
 
+// Feature flag: Set to 'true' to use real AI predictions, 'false' for mock data
+const USE_REAL_AI_PREDICTIONS = process.env.USE_REAL_AI_PREDICTIONS === 'true';
+
 export async function predictAllDemandsAction(): Promise<Forecast[]> {
+<<<<<<< HEAD
   if (USE_MOCK_DATA) {
     return cities.map(city => ({
         city: city.name,
@@ -30,6 +34,41 @@ export async function predictAllDemandsAction(): Promise<Forecast[]> {
       population: city.population,
       lgbtqIndex: city.lgbtqIndex,
     }).then(demand => ({
+=======
+  if (USE_REAL_AI_PREDICTIONS) {
+    // Use real AI predictions
+    const forecasts: Forecast[] = await Promise.all(
+      cities.map(async (city) => {
+        try {
+          const result = await predictMassageDemand({
+            city: city.name,
+            population: city.population,
+            lgbtqIndex: city.lgbtqIndex,
+          });
+          return {
+            city: city.name,
+            state: city.state,
+            demandScore: result.demandScore,
+            lgbtqIndex: city.lgbtqIndex,
+          };
+        } catch (error) {
+          console.error(`Error predicting demand for ${city.name}:`, error);
+          // Fallback to mock data for this city
+          return {
+            city: city.name,
+            state: city.state,
+            demandScore: Math.floor(Math.random() * 70) + 30,
+            lgbtqIndex: city.lgbtqIndex,
+          };
+        }
+      })
+    );
+    return forecasts;
+  }
+
+  // Return mock data directly to avoid hitting API rate limits or incurring costs.
+  const forecasts: Forecast[] = cities.map(city => ({
+>>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
       city: city.name,
       state: city.state,
       demandScore: demand.demandScore,
@@ -131,13 +170,23 @@ export async function addServiceListingAction(listingData: Omit<ServiceListing, 
     }
 }
 
+<<<<<<< HEAD
 export async function updateUserAction(userData: Partial<User> & { id: string }) {
+=======
+export async function createInvitationAction(invitationData: {
+    email: string;
+    tier: 'gold' | 'platinum';
+    couponCode?: string;
+    discountPercentage?: number;
+}) {
+>>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
     const { firestore } = initializeFirebase();
     if (!firestore) {
         throw new Error("Firestore is not initialized.");
     }
 
     try {
+<<<<<<< HEAD
         // This is a placeholder for getting the current user's ID token from the client request.
         // In a real app, you MUST verify the caller is an admin based on their token.
         const isAdmin = true; // For development, assume the caller is an admin.
@@ -157,6 +206,30 @@ export async function updateUserAction(userData: Partial<User> & { id: string })
         if (error.code === 7) { // Firestore permission denied code
             return { success: false, error: 'Permission denied. You do not have the required rights to update this user.' };
         }
+=======
+        // Generate unique invitation code
+        const inviteCode = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
+        const invitationDocument = {
+            ...invitationData,
+            inviteCode,
+            createdAt: serverTimestamp(),
+            status: 'pending', // pending, used, expired
+            usedAt: null,
+            usedBy: null,
+        };
+
+        const invitationsCollectionRef = collection(firestore, 'invitations');
+        const docRef = await addDoc(invitationsCollectionRef, invitationDocument);
+
+        return {
+            success: true,
+            inviteCode,
+            id: docRef.id
+        };
+    } catch (error: any) {
+        console.error("Error creating invitation: ", error);
+>>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
         return { success: false, error: error.message };
     }
 }

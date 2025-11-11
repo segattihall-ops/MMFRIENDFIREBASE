@@ -17,12 +17,12 @@ import AdminDashboard from './admin/AdminDashboard';
 import UserProfile from './profile/UserProfile';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useAuth, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { signOut } from 'firebase/auth';
 import MasseurBnb from './masseurbnb/MasseurBnb';
 import ServicesMarketplace from './services/ServicesMarketplace';
 import { doc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { initiateSignOut } from '@/firebase/non-blocking-login';
 
 
 export default function MasseurProApp() {
@@ -78,14 +78,11 @@ export default function MasseurProApp() {
       setViewingProfileId(null);
       setActiveTab('dashboard');
 
-      await signOut(auth);
+      await initiateSignOut(auth);
       
-      toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
-      });
+      // The onAuthStateChanged listener will handle the redirect.
+      // No need to call router.push here.
 
-      router.push('/login');
     } catch (error) {
       console.error("Logout Error:", error);
       toast({
