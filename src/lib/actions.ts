@@ -12,10 +12,10 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getAuth } from 'firebase-admin/auth';
 
 
-const USE_MOCK_DATA = true; // Set to false when you have API quota
+const USE_MOCK_DATA = false; // Set to false when you have API quota
 
 // Feature flag: Set to 'true' to use real AI predictions, 'false' for mock data
-const USE_REAL_AI_PREDICTIONS = process.env.USE_REAL_AI_PREDICTIONS === 'true';
+const USE_REAL_AI_PREDICTIONS = true;
 
 export async function predictAllDemandsAction(): Promise<Forecast[]> {
   if (USE_REAL_AI_PREDICTIONS) {

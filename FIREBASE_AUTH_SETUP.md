@@ -358,7 +358,12 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
-}
+}    // ✅ Helper: checks if the document has been updated recently (less than 1 hour)
+    function isFresh() {
+      return resource.data.updatedAt != null &&
+             (request.time - resource.data.updatedAt < duration.value(1, 'hour'));
+    }
+
 ```
 
 ## 7. Error Handling
