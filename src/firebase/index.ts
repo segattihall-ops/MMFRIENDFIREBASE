@@ -1,3 +1,4 @@
+
 'use client';
 
 // Re-export everything from other Firebase modules for a single, consistent import point.

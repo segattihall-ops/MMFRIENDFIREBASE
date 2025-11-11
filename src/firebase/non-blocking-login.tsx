@@ -3,8 +3,6 @@
 import {
   Auth, // Import Auth type for type hinting
   signInAnonymously,
-<<<<<<< HEAD
-=======
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
@@ -14,7 +12,6 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   ConfirmationResult,
->>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
   UserCredential,
   sendPasswordResetEmail,
 } from 'firebase/auth';
@@ -29,7 +26,6 @@ export function initiateAnonymousSignIn(authInstance: Auth): Promise<UserCredent
   // CRITICAL: Call signInAnonymously directly. Do NOT use 'await signInAnonymously(...)'.
   const promise = signInAnonymously(authInstance);
   promise
-<<<<<<< HEAD
     .then(userCredential => {
         // After anonymous sign-in, create their document in Firestore with admin rights.
         const user = userCredential.user;
@@ -55,35 +51,6 @@ export function initiateAnonymousSignIn(authInstance: Auth): Promise<UserCredent
             description: error.message,
         });
     });
-=======
-  .then(userCredential => {
-    // After user is created in Auth, create their document in Firestore.
-    const user = userCredential.user;
-    const db = getFirestore(authInstance.app);
-    const userRef = doc(db, 'users', user.uid);
-    const isAdminEmail = user.email === 'admin@masseurfriend.com';
-    const newUser: User = {
-        id: user.uid,
-        email: user.email || '',
-        tier: isAdminEmail ? 'platinum' : 'free',
-        status: 'active',
-        revenue: 0,
-        isAdmin: isAdminEmail,
-    };
-    // Use merge: true to safely create or update the user document
-    setDocumentNonBlocking(userRef, newUser, { merge: true });
-  })
-  .catch(error => {
-    let description = error.message;
-    if (error.code === 'auth/email-already-in-use') {
-        description = "This email is already in use. Please sign in or use a different email.";
-    }
-    toast({
-        variant: "destructive",
-        title: "Sign-Up Failed",
-        description,
-    });
-  });
   return promise;
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }
@@ -128,7 +95,6 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
         description,
       });
     });
->>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
   return promise;
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }

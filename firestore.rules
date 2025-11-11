@@ -14,11 +14,7 @@
  * - /cities/{cityId}/competitor_data/{competitorDataId}: Stores competitor data; read access is public, write is restricted to admins.
  * - /seasonal_data/{seasonalDataId}: Stores seasonal data; read access is public, write is restricted to admins.
  * - /service_listings/{listingId}: Stores service listings; read is public, write is restricted to service provider.
-<<<<<<< HEAD
- * - /invitations/{invitationId}: Stores invitations; access is restricted to admins.
-=======
  * - /invitations/{invitationId}: Stores invitation codes; admin-only write, users can read their own invitations.
->>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
  *
  * Key Security Decisions:
  * - Users can only access their own user documents unless they are an admin.
@@ -116,14 +112,6 @@ service cloud.firestore {
       allow get, list: if isAuth();
       allow create: if isAuth() && isProvider();
       allow update, delete: if isAuth() && resource != null && (isExistingProvider() || isAdmin());
-    }
-
-    /**
-     * @description Allows admin-only access to invitations.
-     * @path /invitations/{invitationId}
-     */
-    match /invitations/{invitationId} {
-      allow read, write: if isAdmin();
     }
 
     /**

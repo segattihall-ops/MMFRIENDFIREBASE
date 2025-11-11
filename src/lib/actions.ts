@@ -18,23 +18,6 @@ const USE_MOCK_DATA = true; // Set to false when you have API quota
 const USE_REAL_AI_PREDICTIONS = process.env.USE_REAL_AI_PREDICTIONS === 'true';
 
 export async function predictAllDemandsAction(): Promise<Forecast[]> {
-<<<<<<< HEAD
-  if (USE_MOCK_DATA) {
-    return cities.map(city => ({
-        city: city.name,
-        state: city.state,
-        demandScore: Math.floor(60 + Math.random() * 40),
-        lgbtqIndex: city.lgbtqIndex,
-    }));
-  }
-
-  const demandPromises = cities.map(city => 
-    predictMassageDemand({
-      city: city.name,
-      population: city.population,
-      lgbtqIndex: city.lgbtqIndex,
-    }).then(demand => ({
-=======
   if (USE_REAL_AI_PREDICTIONS) {
     // Use real AI predictions
     const forecasts: Forecast[] = await Promise.all(
@@ -68,15 +51,12 @@ export async function predictAllDemandsAction(): Promise<Forecast[]> {
 
   // Return mock data directly to avoid hitting API rate limits or incurring costs.
   const forecasts: Forecast[] = cities.map(city => ({
->>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
       city: city.name,
       state: city.state,
-      demandScore: demand.demandScore,
+      demandScore: Math.floor(60 + Math.random() * 40),
       lgbtqIndex: city.lgbtqIndex,
-    }))
-  );
+  }));
 
-  const forecasts = await Promise.all(demandPromises);
   return forecasts;
 }
 
@@ -170,23 +150,13 @@ export async function addServiceListingAction(listingData: Omit<ServiceListing, 
     }
 }
 
-<<<<<<< HEAD
 export async function updateUserAction(userData: Partial<User> & { id: string }) {
-=======
-export async function createInvitationAction(invitationData: {
-    email: string;
-    tier: 'gold' | 'platinum';
-    couponCode?: string;
-    discountPercentage?: number;
-}) {
->>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
     const { firestore } = initializeFirebase();
     if (!firestore) {
         throw new Error("Firestore is not initialized.");
     }
 
     try {
-<<<<<<< HEAD
         // This is a placeholder for getting the current user's ID token from the client request.
         // In a real app, you MUST verify the caller is an admin based on their token.
         const isAdmin = true; // For development, assume the caller is an admin.
@@ -206,30 +176,39 @@ export async function createInvitationAction(invitationData: {
         if (error.code === 7) { // Firestore permission denied code
             return { success: false, error: 'Permission denied. You do not have the required rights to update this user.' };
         }
-=======
+        return { success: false, error: error.message };
+    }
+}
+
+export async function createInvitationAction(invitationData: {
+    email: string;
+    tier: 'gold' | 'platinum';
+    couponCode?: string;
+    discountPercentage?: number;
+}) {
+    const { firestore } = initializeFirebase();
+    if (!firestore) {
+        throw new Error("Firestore is not initialized.");
+    }
+
+    try {
         // Generate unique invitation code
         const inviteCode = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
 
         const invitationDocument = {
             ...invitationData,
-            inviteCode,
-            createdAt: serverTimestamp(),
-            status: 'pending', // pending, used, expired
-            usedAt: null,
-            usedBy: null,
+            status: 'pending',
+            createdAt: FieldValue.serverTimestamp(),
         };
 
-        const invitationsCollectionRef = collection(firestore, 'invitations');
-        const docRef = await addDoc(invitationsCollectionRef, invitationDocument);
+        const docRef = await firestore.collection('invitations').doc(inviteCode).set(invitationDocument);
 
         return {
             success: true,
             inviteCode,
-            id: docRef.id
         };
     } catch (error: any) {
         console.error("Error creating invitation: ", error);
->>>>>>> 6750567f0863c5a823e918f1d2c266696fa45ab6
         return { success: false, error: error.message };
     }
 }
