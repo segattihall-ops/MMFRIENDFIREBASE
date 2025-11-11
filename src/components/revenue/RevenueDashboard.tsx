@@ -1,26 +1,22 @@
 
+"use client";
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DollarSign, BadgePercent, Wallet } from "lucide-react";
 import Link from 'next/link';
-
-const revenueData = [
-  { title: "Total Revenue", value: "$14,500", icon: DollarSign, color: "text-green-600", bg: "bg-green-500/10" },
-  { title: "Expenses", value: "$2,900", icon: BadgePercent, color: "text-red-600", bg: "bg-red-500/10" },
-  { title: "Net Profit", value: "$11,600", icon: Wallet, color: "text-blue-600", bg: "bg-blue-500/10" },
-];
 
 interface RevenueDashboardProps {
     userTier: 'platinum' | 'gold' | 'silver' | 'free';
 }
 
 export default function RevenueDashboard({ userTier }: RevenueDashboardProps) {
-  if (userTier !== 'platinum' && userTier !== 'gold') {
+  if (userTier !== 'platinum') {
       return (
         <Card className="text-center p-8">
           <CardTitle className="font-headline text-2xl">This is a Premium Feature</CardTitle>
           <CardDescription className="my-4">
-            Upgrade to a Gold or Platinum plan to unlock advanced revenue analytics, expense tracking, and profit analysis.
+            Upgrade to a Platinum plan to unlock advanced revenue analytics, expense tracking, and profit analysis.
           </CardDescription>
           <Link href="/subscribe">
             <Button>Upgrade Plan</Button>
@@ -32,17 +28,33 @@ export default function RevenueDashboard({ userTier }: RevenueDashboardProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {revenueData.map((item) => (
-          <Card key={item.title} className={item.bg}>
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
-              <item.icon className={`h-4 w-4 text-muted-foreground ${item.color}`} />
+              <CardTitle className="text-sm font-medium">Lifetime Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className={`text-4xl font-bold font-headline ${item.color}`}>{item.value}</div>
+              <div className="text-4xl font-bold font-headline">$0</div>
             </CardContent>
           </Card>
-        ))}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg. Rate</CardTitle>
+              <BadgePercent className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold font-headline">$0/hr</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Next Payout</CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold font-headline">$0.00</div>
+            </CardContent>
+          </Card>
       </div>
        <Card>
         <CardHeader>
