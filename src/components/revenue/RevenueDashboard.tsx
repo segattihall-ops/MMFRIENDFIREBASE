@@ -1,20 +1,41 @@
-
+"use client";
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DollarSign, BadgePercent, Wallet } from "lucide-react";
 import Link from 'next/link';
-
-const revenueData = [
-  { title: "Total Revenue", value: "$14,500", icon: DollarSign, color: "text-green-600", bg: "bg-green-500/10" },
-  { title: "Expenses", value: "$2,900", icon: BadgePercent, color: "text-red-600", bg: "bg-red-500/10" },
-  { title: "Net Profit", value: "$11,600", icon: Wallet, color: "text-blue-600", bg: "bg-blue-500/10" },
-];
+import type { User as AppUser } from '@/lib/types';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
+import { Skeleton } from '../ui/skeleton';
 
 interface RevenueDashboardProps {
     userTier: 'platinum' | 'gold' | 'silver' | 'free';
 }
 
 export default function RevenueDashboard({ userTier }: RevenueDashboardProps) {
+  const firestore = useFirestore();
+
+  const usersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'users'));
+  }, [firestore]);
+
+  const { data: users, isLoading: isLoadingUsers } = useCollection<AppUser>(usersQuery);
+
+  // Calculate real total revenue from Firestore
+  const totalRevenue = users?.reduce((acc, user) => acc + (user.revenue || 0), 0) || 0;
+
+  // Placeholder values for expenses and net profit (to be implemented in future)
+  const expenses = 2900;
+  const netProfit = 11600;
+
+  const revenueData = [
+    { title: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-600", bg: "bg-green-500/10", isLoading: isLoadingUsers },
+    { title: "Expenses", value: `$${expenses.toLocaleString()}`, icon: BadgePercent, color: "text-red-600", bg: "bg-red-500/10", isLoading: false },
+    { title: "Net Profit", value: `$${netProfit.toLocaleString()}`, icon: Wallet, color: "text-blue-600", bg: "bg-blue-500/10", isLoading: false },
+  ];
+
   if (userTier !== 'platinum') {
       return (
         <Card className="text-center p-8">
@@ -39,7 +60,11 @@ export default function RevenueDashboard({ userTier }: RevenueDashboardProps) {
               <item.icon className={`h-4 w-4 text-muted-foreground ${item.color}`} />
             </CardHeader>
             <CardContent>
-              <div className={`text-4xl font-bold font-headline ${item.color}`}>{item.value}</div>
+              {item.isLoading ? (
+                <Skeleton className="h-10 w-32" />
+              ) : (
+                <div className={`text-4xl font-bold font-headline ${item.color}`}>{item.value}</div>
+              )}
             </CardContent>
           </Card>
         ))}
